@@ -14,6 +14,8 @@ filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
 
+data_wndw = 0.1
+
 def value_to_plot(trace):
     if trace in ['DATA']:
         return 1
@@ -24,7 +26,7 @@ def value_to_plot(trace):
 
 def data_trace(x_vals):
     #wndw = 0.1
-    wndw = 0.05
+    wndw = data_wndw
     wndw_start = 0.0
     wndw_end = wndw_start + wndw
     multiplier = 1/wndw
@@ -113,6 +115,7 @@ def plot_trace_file(nodes=None, trace=''):
         if trace == 'DATA': 
             (x_vals, y_vals) = data_trace(x_vals)
 
+        plt.figure(figsize=(10,4))
         plt.plot(x_vals, y_vals, colors[int(i)-1]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i)
         #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
         
@@ -136,6 +139,9 @@ def plot_trace_file(nodes=None, trace=''):
             plt.title('Nodes {} {}'.format(', '.join(nodes), trace))
         else:
             plt.title('Node 1-6 {}'.format(trace))
+        if trace == 'DATA': 
+            plt.suptitle('Data throughput')
+            plt.title('interval = ' + str(data_wndw) + ' s')
 
     ax = plt.axes()
     #ax.xaxis.set_major_locator(plt.MaxNLocator(5))
@@ -145,7 +151,8 @@ def plot_trace_file(nodes=None, trace=''):
     ax.legend()
 
     #plt.show()
-    plt.savefig('./png/' + output_filename, bbox_inches='tight')
+    #plt.savefig('./png/' + output_filename, bbox_inches='tight')
+    plt.savefig('./png/' + output_filename)
 
 if not os.path.isdir('png'): os.makedirs('png')
 if len(sys.argv) == 2:

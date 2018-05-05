@@ -1,8 +1,6 @@
 import subprocess
 
-traces = ['CWND', 'RCWND', 'RTT']
-nodeses = ['', '1 3 5', '2 4 6']
+traces = ['CWND', 'RCWND', 'RTT', 'DATA', 'LTESINR', 'MMWAVESINR']
 
 for trace in traces:
-    for nodes in nodeses:
-        subprocess.call('python3 plot.py 1 {}'.format(trace), shell=True)
+    subprocess.call('python3 plot.py 1 {}'.format(trace), shell=True)
