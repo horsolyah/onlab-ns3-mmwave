@@ -91,14 +91,63 @@ Traces(uint16_t nodeNum, std::string protocol)
 int
 main (int argc, char *argv[])
 {   
+	// NLOS LOS NLOS
 
-    Box building_box = Box (30,150, 0,50, 0,50);              // line 315
-    Vector UE_start_pos = Vector (160, -50.0, 1.5);          // line 352
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);      // line 358
+	//sce14
+	Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
+	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
+	Vector UE_start_pos = Vector (100, -60.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
 
-    /*Box building_box = Box (30,90, 0,50, 0,50);              // line 315
-    Vector UE_start_pos = Vector (100, -50.0, hUT);          // line 352
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);      // line 358
+	//sce13
+	/*Box building_box = Box (50,60, 50,100, 0,50); 	// building +5 mely
+	Box building_box_2 = Box (50,60, -100,0, 0,50); 
+	Vector UE_start_pos = Vector (110, -20.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+	*/
+    // sce12
+    /*Box building_box = Box (50,55, 0,50, 0,50);   //100,115 is szar		//sce11 100,105
+    Vector UE_start_pos = Vector (110, -15.0, 1.5);     //150 szar		//sce11 110, -10
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+	*/
+    // sce10
+    /*Box building_box = Box (100,105, 0,50, 0,50);   //100,115 is szar
+    Vector UE_start_pos = Vector (110, -50.0, 1.5);     //150 szar
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+    */
+    // sce9
+    /*Box building_box = Box (100,125, 0,50, 0,50);
+    Vector UE_start_pos = Vector (150, -50.0, 1.5);
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+    */
+    // sce8
+    /*Box building_box = Box (150,200, 0,50, 0,50); 
+    Vector UE_start_pos = Vector (210, -50.0, 1.5);
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+    */
+    // sce7
+    /*Box building_box = Box (150,200, 0,50, 0,50);
+    Vector UE_start_pos = Vector (210, -50.0, 1.5);
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+    */
+    // sce6
+    /*Box building_box = Box (200,400, 0,50, 0,50); 
+    Box building_box = Box (350,400, 0,50, 0,50);              // sce6.1
+    Box building_box = Box (150,200, 0,50, 0,50);              // sce6.2
+    Vector UE_start_pos = Vector (250, -50.0, 1.5);            // sce6.2
+
+    Vector UE_start_pos = Vector (500, -50.0, 1.5);
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0); 
+    */
+    // sce4
+    /*Box building_box = Box (30,180, 0,50, 0,50); 
+    Vector UE_start_pos = Vector (190, -50.0, 1.5);
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
+    */
+    // sce3
+    /*Box building_box = Box (30,90, 0,50, 0,50);
+    Vector UE_start_pos = Vector (100, -50.0, hUT); 
+    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0); 
     */
     //                            ^ UE path
     //        I               I   .
@@ -110,7 +159,7 @@ main (int argc, char *argv[])
     //                            .
     //                            .
 
-  // LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
+   //LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
   // LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
@@ -322,7 +371,7 @@ main (int argc, char *argv[])
 		Ptr<Ipv4StaticRouting> remoteHostStaticRouting = ipv4RoutingHelper.GetStaticRouting (remoteHost->GetObject<Ipv4> ());
 		remoteHostStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);
 
-        //p2ph.EnablePcapAll("mmwave-sgi-capture");
+        p2ph.EnablePcapAll("mmwave-sgi-capture");
 	}
 
 	Ptr < Building > building;
@@ -331,6 +380,13 @@ main (int argc, char *argv[])
 	building->SetNFloors (1);
     building->SetNRoomsX (1);
     building->SetNRoomsY (1);
+
+	Ptr < Building > building2;
+	building2 = Create<Building> ();
+	building2->SetBoundaries (building_box_2);
+	building2->SetNFloors (1);
+    building2->SetNRoomsX (1);
+    building2->SetNRoomsY (1);
 
     NodeContainer ueNodes;
     NodeContainer mmWaveEnbNodes;
@@ -350,15 +406,6 @@ main (int argc, char *argv[])
 	enbmobility.SetPositionAllocator(enbPositionAlloc);
 	enbmobility.Install (allEnbNodes);
 	BuildingsHelper::Install (allEnbNodes);
-
-    /*
-	MobilityHelper uemobilityNLOS;
-	uemobilityNLOS.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
-	                             "Bounds", RectangleValue (Rectangle (31, 60, -20, 20)));
-	Ptr<ListPositionAllocator> uePositionAllocNLOS = CreateObject<ListPositionAllocator> ();
-	uePositionAllocNLOS->Add (Vector (40.0, 0.0, hUT));
-	uemobilityNLOS.SetPositionAllocator(uePositionAllocNLOS);
-	uemobilityNLOS.Install (ueNodes.Get (0));*/
 
     MobilityHelper uemobility;
     uemobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");   

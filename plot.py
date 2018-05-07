@@ -3,7 +3,9 @@ import matplotlib.style as mplstyle
 mplstyle.use('fast')
 import matplotlib.pyplot as plt
 
-protocol = 'TcpVegas'
+#protocol = 'TcpVegas'
+#protocol = 'TcpCubic'
+protocol = 'TcpNewReno'
 #protocol = 'TcpHighSpeed'
 buffer_size = '1500000'
 packet_size = '1400'
@@ -115,7 +117,7 @@ def plot_trace_file(nodes=None, trace=''):
         if trace == 'DATA': 
             (x_vals, y_vals) = data_trace(x_vals)
 
-        plt.figure(figsize=(10,4))
+        plt.figure(figsize=(11,4))
         plt.plot(x_vals, y_vals, colors[int(i)-1]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i)
         #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
         
