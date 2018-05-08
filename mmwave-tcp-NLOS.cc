@@ -52,6 +52,12 @@ ChangeSpeed(Ptr<Node>  n, Vector speed)
 	n->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (speed);
 }
 
+void ue_move (Ptr<ConstantVelocityMobilityModel> m, Vector velocity_vector)
+{
+	m->SetVelocity (velocity_vector); 
+	Vector pos = m->GetPosition ();
+	std::cout << "POS: x=" << pos.x << ", y=" << pos.y << std::endl;
+}
 
 static void
 Traces(uint16_t nodeNum, std::string protocol)
@@ -91,14 +97,25 @@ Traces(uint16_t nodeNum, std::string protocol)
 int
 main (int argc, char *argv[])
 {   
-	// NLOS LOS NLOS
+	// LOS NLOS LOS
+	//sce16
+	Box building_box = Box (50,55, -20,20, 0,50);
+	Vector UE_start_pos = Vector (100, -60.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
 
+	// NLOS LOS NLOS
+	//sce15
+	/*Box building_box = Box (50,55, 20,100, 0,50); 	// 25 helyett 20
+	Box building_box_2 = Box (50,55, -100,-20, 0,50); 
+	Vector UE_start_pos = Vector (100, -60.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
+	*/
 	//sce14
-	Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
+	/*Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
 	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
 	Vector UE_start_pos = Vector (100, -60.0, 1.5);
 	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
-
+	*/
 	//sce13
 	/*Box building_box = Box (50,60, 50,100, 0,50); 	// building +5 mely
 	Box building_box_2 = Box (50,60, -100,0, 0,50); 
@@ -371,7 +388,9 @@ main (int argc, char *argv[])
 		Ptr<Ipv4StaticRouting> remoteHostStaticRouting = ipv4RoutingHelper.GetStaticRouting (remoteHost->GetObject<Ipv4> ());
 		remoteHostStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);
 
-        p2ph.EnablePcapAll("mmwave-sgi-capture");
+        //p2ph.EnablePcapAll("mmwave-sgi-capture");
+		std::cout << "GetId(): " << remoteHost->GetId () << std::endl;
+		p2ph.EnablePcap ("netdevice", remoteHost->GetId (), 1);
 	}
 
 	Ptr < Building > building;
@@ -381,12 +400,13 @@ main (int argc, char *argv[])
     building->SetNRoomsX (1);
     building->SetNRoomsY (1);
 
-	Ptr < Building > building2;
+	/*Ptr < Building > building2;
 	building2 = Create<Building> ();
 	building2->SetBoundaries (building_box_2);
 	building2->SetNFloors (1);
     building2->SetNRoomsX (1);
     building2->SetNRoomsY (1);
+	*/
 
     NodeContainer ueNodes;
     NodeContainer mmWaveEnbNodes;
@@ -417,7 +437,8 @@ main (int argc, char *argv[])
 
     Ptr<ConstantVelocityMobilityModel> mob = ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel>();
     // uemobility->SetVelocity("Velocity", Vector3DValue (Vector(0.0, 20.0, 0.0)) );
-    mob->SetVelocity(UE_velocity_vector);   // direction and velocity of UE in m/s
+    //mob->SetVelocity( UE_velocity_vector);   // direction and velocity of UE in m/s
+	mob->SetVelocity (Vector (0, 0, 0));   // initially stationary
     Vector pos = mob->GetPosition ();
     std::cout << "POS: x=" << pos.x << ", y=" << pos.y << std::endl;
 
@@ -491,6 +512,7 @@ main (int argc, char *argv[])
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxBytes", UintegerValue (1500*1000*1000));
     std::cout << hUT;
 
+	Simulator::Schedule (Seconds(10), &ue_move, mob, UE_velocity_vector);
 	Simulator::Stop (Seconds (simStopTime));
 	Simulator::Run ();
     Vector pos2 = mob->GetPosition ();

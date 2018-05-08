@@ -3,9 +3,9 @@ import matplotlib.style as mplstyle
 mplstyle.use('fast')
 import matplotlib.pyplot as plt
 
-#protocol = 'TcpVegas'
+protocol = 'TcpVegas'
 #protocol = 'TcpCubic'
-protocol = 'TcpNewReno'
+#protocol = 'TcpNewReno'
 #protocol = 'TcpHighSpeed'
 buffer_size = '1500000'
 packet_size = '1400'
