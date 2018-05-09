@@ -304,12 +304,10 @@ main (int argc, char *argv[])
 		if (i == 0 || i == 2 || i == 4)
 		{
 			p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (p2pDelay)));
-			//p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (18)));
 		}
 		else
 		{
-			p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (p2pDelay)));
-			//p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (18)));
+			p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (18)));
 		}
 
 		NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);

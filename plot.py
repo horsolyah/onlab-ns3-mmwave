@@ -3,6 +3,7 @@ import matplotlib.style as mplstyle
 mplstyle.use('fast')
 import matplotlib.pyplot as plt
 
+#protocol = 'TcpWestwood'
 protocol = 'TcpVegas'
 #protocol = 'TcpCubic'
 #protocol = 'TcpNewReno'
