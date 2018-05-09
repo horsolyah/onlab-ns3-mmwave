@@ -100,6 +100,11 @@ def plot_trace_file(nodes=None, trace=''):
             for line in f:
                 #time, old, new = re.match('([0-9\.]*)\W*([0-9\.]*)\W*([0-9\.]*)\W*')
                 linedata = re.findall('([0-9\.]*)\W*', line)
+
+                if trace == 'MMWAVESINR':
+                    if linedata[1] != str(i):	# only gather current node's data
+                        continue
+
                 x_val, y_val = linedata[0], linedata[value_to_plot(trace)]                    
 
                 if trace == 'CWND' or trace == 'RCWND':     # cwnd size to packets
