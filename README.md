@@ -1,4 +1,4 @@
-## 5G hálózat szimulációs vizsgálata az ns-3 mmWave modul használatával
+## 5G network simulation experiments using the ns3-mmwave module
 ##### Code repository for my ns-3 mobile network simulation coursework, created for a Laboratory course at Budapest University of Technology and Economics.
 
 ![Scenario1](https://i.imgur.com/bn7DiyI.png) ![Scenario2](https://i.imgur.com/p6ieC4L.png)
