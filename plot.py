@@ -1,8 +1,27 @@
 import os, sys, re
+import argparse
 import matplotlib.style as mplstyle
 mplstyle.use('fast')
 import matplotlib.pyplot as plt
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
+parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="", choices=['1', '2', '3', '4', '5', '6'])
+parser.add_argument("--data-wndw", default='0.1', nargs='?', help="")
+args = parser.parse_args()
+
+filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
+BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+files = [f for f in os.listdir(BASE_PATH) if os.path.isfile(f)]
+for filename in files:
+    match = re.match(filename_regex, filename)
+    if match:
+        protocol = match[1]
+        buffer_size = match[2]
+        packet_size = match[3]
+        p2pdelay = match[4]
+
+'''
 #protocol = 'TcpWestwood'
 protocol = 'TcpVegas'
 #protocol = 'TcpCubic'
@@ -12,12 +31,15 @@ buffer_size = '1500000'
 packet_size = '1400'
 #p2pdelay = '0'
 p2pdelay = '18'
+'''
 nodeNum = 6
 filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
 
-data_wndw = 0.1
+data_wndw = float(args.data_wndw)
+multiplot_cnt = 0
+output_filename = ''
 
 def value_to_plot(trace):
     if trace in ['DATA']:
@@ -67,27 +89,25 @@ def data_trace(x_vals):
         y_vals.append(int(y_val))
 
     return (x_vals, y_vals)
-    
-
 
 def plot_trace_file(nodes=None, trace=''):
     # nodes: only plot specified nodes' trace data (list)
-    # trace: [CWND, RCWND, RTT]
+    # trace: ['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR']
 
-    
+    global multiplot_cnt, output_filename
 
     if not nodes: 
-        nodes = ['1', '2', '3', '4', '5', '6']
-        output_filename = trace + '.png'
+        nodes = ['1']
+        output_filename += trace
     else:
-        output_filename = '-'.join(['-'.join(nodes), trace + '.png'])
+        output_filename += '-'.join(['-'.join(nodes), trace])
 
     if trace == 'MMWAVESINR':
         trace_filename = 'MmWaveSinrTime.txt'
-        output_filename = 'MmWaveSinrTime.png'
+        output_filename += 'MmWaveSinrTime'
     if trace == 'LTESINR':
         trace_filename = 'LteSinrTime.txt'
-        output_filename = 'LteSinrTime.png'
+        output_filename += 'LteSinrTime'
     
     for i in nodes:
         if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:   
@@ -123,8 +143,10 @@ def plot_trace_file(nodes=None, trace=''):
         if trace == 'DATA': 
             (x_vals, y_vals) = data_trace(x_vals)
 
-        plt.figure(figsize=(11,4))
-        plt.plot(x_vals, y_vals, colors[int(i)-1]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i)
+        #color_index = int(i)-1
+        # color_index = (multiplot_cnt + int(i)-1) % len(colors)    # todo test
+        color_index = multiplot_cnt
+        plt.plot(x_vals, y_vals, colors[color_index]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i)
         #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
         
         plt.xlabel('time (s)')
@@ -158,21 +180,23 @@ def plot_trace_file(nodes=None, trace=''):
     ax.yaxis.set_major_locator(plt.AutoLocator())
     ax.legend()
 
-    #plt.show()
-    #plt.savefig('./png/' + output_filename, bbox_inches='tight')
-    plt.savefig('./png/' + output_filename)
+    multiplot_cnt += 1
 
+def multiplot_trace_files(nodes=None, traces=None):
+    plt.figure(figsize=(11,4))
+
+    for trace in traces:
+        if trace != traces[0] and trace != traces[-1]: 
+            global output_filename
+            output_filename += '_'
+        plot_trace_file(nodes=nodes, trace=trace)
+
+
+multiplot_trace_files(nodes=args.nodes, traces=args.traces)
+
+#plt.show()
+#plt.savefig('./png/' + output_filename, bbox_inches='tight')
 if not os.path.isdir('png'): os.makedirs('png')
-if len(sys.argv) == 2:
-    if sys.argv[1] not in ['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR']: 
-        print('Available arguments: CWND, RCWND, RTT, DATA, MMWAVESINR, LTESINR')
-        exit(0)
-    plot_trace_file(trace=sys.argv[1])
-elif len(sys.argv) == 3:
-    plot_trace_file(nodes=[sys.argv[1]], trace=sys.argv[2])
-elif len(sys.argv) > 3:
-    plot_trace_file(nodes=sys.argv[1:-1], trace=sys.argv[-1])
-else:
-    print('Else.')
+plt.savefig('./png/' + output_filename + '.png')
 
 

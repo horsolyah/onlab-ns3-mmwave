@@ -9,6 +9,12 @@ Box building_box = Box (50,55, -20,20, 0,50);
 Vector UE_start_pos = Vector (100, -60.0, 1.5);
 Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
 '''
+'''
+Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
+	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
+	Vector UE_start_pos = Vector (100, -60.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0)
+'''
 
 def add_building(x1, x2, y1, y2):
     width = x2 - x1
@@ -29,7 +35,8 @@ def add_UE(x, y, vx, vy):
 fig1 = plt.figure(figsize=(4, 4))
 ax1 = fig1.add_subplot(111, aspect='equal')
 
-add_building(50,75, -20,20)
+add_building(50,55, 25,100)
+add_building(50,55, -100,-25)
 add_node(0, 0, 'r')
 add_UE(100, -60.0, 0.0, 6.25)
 

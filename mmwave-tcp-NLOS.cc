@@ -99,9 +99,9 @@ main (int argc, char *argv[])
 {   
 	// LOS NLOS LOS
 	//sce16
-	Box building_box = Box (50,55, -20,20, 0,50);
+	/*Box building_box = Box (50,55, -20,20, 0,50);
 	Vector UE_start_pos = Vector (100, -60.0, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
+	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);*/
 
 	// NLOS LOS NLOS
 	//sce15
@@ -111,11 +111,11 @@ main (int argc, char *argv[])
 	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
 	*/
 	//sce14
-	/*Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
+	Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
 	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
 	Vector UE_start_pos = Vector (100, -60.0, 1.5);
 	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
-	*/
+	
 	//sce13
 	/*Box building_box = Box (50,60, 50,100, 0,50); 	// building +5 mely
 	Box building_box_2 = Box (50,60, -100,0, 0,50); 
@@ -180,10 +180,10 @@ main (int argc, char *argv[])
   // LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
-	double simStopTime = 60;
+	double simStopTime = 8;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
-	std::string protocol = "TcpVegas";
+	std::string protocol = "TcpBbr";
 	//int bufferSize = 1000 *1000 * 3.5 * 0.4;
 	int bufferSize = 1000 *1000 * 1.5;
 	int packetSize = 1400;
@@ -283,6 +283,11 @@ main (int argc, char *argv[])
     else if (protocol == "TcpYeah")
     {
     	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpYeah::GetTypeId ()));
+
+    }
+	else if (protocol == "TcpBbr")
+    {
+    	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpBbr::GetTypeId ()));
 
     }
     else
@@ -400,13 +405,13 @@ main (int argc, char *argv[])
     building->SetNRoomsX (1);
     building->SetNRoomsY (1);
 
-	/*Ptr < Building > building2;
+	Ptr < Building > building2;
 	building2 = Create<Building> ();
 	building2->SetBoundaries (building_box_2);
 	building2->SetNFloors (1);
     building2->SetNRoomsX (1);
     building2->SetNRoomsY (1);
-	*/
+	
 
     NodeContainer ueNodes;
     NodeContainer mmWaveEnbNodes;
@@ -512,7 +517,7 @@ main (int argc, char *argv[])
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxBytes", UintegerValue (1500*1000*1000));
     std::cout << hUT;
 
-	Simulator::Schedule (Seconds(10), &ue_move, mob, UE_velocity_vector);
+	Simulator::Schedule (Seconds(1), &ue_move, mob, UE_velocity_vector);
 	Simulator::Stop (Seconds (simStopTime));
 	Simulator::Run ();
     Vector pos2 = mob->GetPosition ();
