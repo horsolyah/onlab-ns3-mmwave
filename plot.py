@@ -1,8 +1,10 @@
-import os, sys, re
+import os, sys, re, math
 import argparse
 import matplotlib.style as mplstyle
 mplstyle.use('fast')
 import matplotlib.pyplot as plt
+import mpl_toolkits.axisartist as AA
+from mpl_toolkits.axes_grid1 import host_subplot
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
@@ -37,8 +39,11 @@ filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
 
+host = host_subplot(111, axes_class=AA.Axes)
+y_plots = []
+multiplot_cnt = 0   # post-increment
+
 data_wndw = float(args.data_wndw)
-multiplot_cnt = 0
 output_filename = ''
 
 def value_to_plot(trace):
@@ -48,6 +53,54 @@ def value_to_plot(trace):
         return 2
     if trace in ['MMWAVESINR', 'LTESINR']:
         return 3
+
+def get_y_lims(y_vals, trace):
+    # should axes start from 0? or min(vals)? percentage padding?
+    if trace == 'RTT':
+        lims = min(y_vals), max(y_vals)
+    else:
+        lims = math.floor(min(y_vals)), math.ceil(max(y_vals))
+    return lims
+
+def get_label(trace):
+    if trace == 'CWND' or trace == 'RCWND':
+        return 'CWND size (packets)'
+    if trace == 'RTT':
+        return 'RTT (s)'
+    if trace == 'DATA': 
+        return 'Throughput (Mb/s)'  # MB? Mb?????????
+    if trace == 'MMWAVESINR':
+        return 'SINR (dB)'
+    if trace == 'LTESINR':
+        return 'SINR'
+
+def new_y_axis_plot(x_vals, y_vals, trace):
+    if multiplot_cnt == 0:
+        PLOT = host
+        LOCATION = 'left'
+    else:
+        PLOT = host.twinx()
+        if multiplot_cnt == 1:
+            LOCATION = 'right'
+        else:
+            LOCATION = 'right' if multiplot_cnt % 2 == 0 else 'left'
+            OFFSET = (60, 0) if multiplot_cnt % 2 == 0 else (-60, 0)
+
+        if multiplot_cnt >= 2:
+            new_fixed_axis = PLOT.get_grid_helper().new_fixed_axis
+            PLOT.axis[LOCATION] = new_fixed_axis(loc=LOCATION, axes=PLOT, offset=OFFSET)
+            PLOT.axis[LOCATION].toggle(all=True)
+
+    PLOT.set_ylabel(get_label(trace))
+    PLOT.set_ylim(get_y_lims(y_vals, trace))
+
+    p1, = PLOT.plot(x_vals, y_vals, label=get_label(trace))    # plot call
+
+    PLOT.axis[LOCATION].toggle(all=True)
+    PLOT.axis[LOCATION].label.set_color(p1.get_color())
+    PLOT.axis[LOCATION].line.set_color(p1.get_color())
+    PLOT.axis[LOCATION].major_ticks.set_color(p1.get_color())
+    PLOT.axis[LOCATION].major_ticklabels.set_color(p1.get_color())
 
 def data_trace(x_vals):
     #wndw = 0.1
@@ -98,16 +151,14 @@ def plot_trace_file(nodes=None, trace=''):
 
     if not nodes: 
         nodes = ['1']
-        output_filename += trace
+        output_filename += trace # TODO
     else:
-        output_filename += '-'.join(['-'.join(nodes), trace])
+        output_filename += '-'.join(['-'.join(nodes), trace]) # TODO
 
     if trace == 'MMWAVESINR':
         trace_filename = 'MmWaveSinrTime.txt'
-        output_filename += 'MmWaveSinrTime'
     if trace == 'LTESINR':
         trace_filename = 'LteSinrTime.txt'
-        output_filename += 'LteSinrTime'
     
     for i in nodes:
         if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:   
@@ -146,21 +197,20 @@ def plot_trace_file(nodes=None, trace=''):
         #color_index = int(i)-1
         # color_index = (multiplot_cnt + int(i)-1) % len(colors)    # todo test
         color_index = multiplot_cnt
-        plt.plot(x_vals, y_vals, colors[color_index]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i)
+        ### this was used ##plt.plot(x_vals, y_vals, colors[color_index]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i+' '+trace)
         #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
+
         
-        plt.xlabel('time (s)')
-        if trace == 'CWND' or trace == 'RCWND':
-            plt.ylabel('CWND size (packets)')
-        if trace == 'RTT':
-            plt.ylabel('RTT (s)')
-        if trace == 'DATA': 
-            plt.ylabel('Throughput (MB/s)')
-        if trace == 'MMWAVESINR':
-            plt.ylabel('SINR (dB)')
-        if trace == 'LTESINR':
-            plt.ylabel('SINR')
+        plt.subplots_adjust(right=0.75)
+
+        new_y_axis_plot(x_vals, y_vals, trace)
+        
+        host.set_xlabel("Time (s)")
+        host.set_xlim(math.floor(min(x_vals)), math.ceil(max(x_vals)))
+        host.legend()
+        
         #plt.axis('tight')
+        '''
         if len(nodes) == 1:
             plt.title('Node {} {}'.format(nodes[0], trace))
         elif len(nodes) == 6:
@@ -172,18 +222,12 @@ def plot_trace_file(nodes=None, trace=''):
         if trace == 'DATA': 
             plt.suptitle('Data throughput')
             plt.title('interval = ' + str(data_wndw) + ' s')
-
-    ax = plt.axes()
-    #ax.xaxis.set_major_locator(plt.MaxNLocator(5))
-    #ax.yaxis.set_major_locator(plt.MaxNLocator(5))
-    ax.xaxis.set_major_locator(plt.AutoLocator())
-    ax.yaxis.set_major_locator(plt.AutoLocator())
-    ax.legend()
+        '''
 
     multiplot_cnt += 1
 
 def multiplot_trace_files(nodes=None, traces=None):
-    plt.figure(figsize=(11,4))
+    #2plt.figure(figsize=(11,4))
 
     for trace in traces:
         if trace != traces[0] and trace != traces[-1]: 
@@ -191,12 +235,12 @@ def multiplot_trace_files(nodes=None, traces=None):
             output_filename += '_'
         plot_trace_file(nodes=nodes, trace=trace)
 
-
 multiplot_trace_files(nodes=args.nodes, traces=args.traces)
 
+if not os.path.isdir('png'): os.makedirs('png')
+plt.draw()
 #plt.show()
 #plt.savefig('./png/' + output_filename, bbox_inches='tight')
-if not os.path.isdir('png'): os.makedirs('png')
 plt.savefig('./png/' + output_filename + '.png')
 
 
