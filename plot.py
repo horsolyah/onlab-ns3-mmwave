@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1 import host_subplot
 parser = argparse.ArgumentParser()
 parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
 parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="", choices=['1', '2', '3', '4', '5', '6'])
-parser.add_argument("--data-wndw", default='0.1', nargs='?', help="")
+parser.add_argument("--data-wndw", default='0.05', nargs='?', help="")
 args = parser.parse_args()
 
 filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
@@ -17,23 +17,12 @@ BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 files = [f for f in os.listdir(BASE_PATH) if os.path.isfile(f)]
 for filename in files:
     match = re.match(filename_regex, filename)
-    if match:
+    if match:    # obtain simulation parameters from the first file it finds
         protocol = match[1]
         buffer_size = match[2]
         packet_size = match[3]
         p2pdelay = match[4]
 
-'''
-#protocol = 'TcpWestwood'
-protocol = 'TcpVegas'
-#protocol = 'TcpCubic'
-#protocol = 'TcpNewReno'
-#protocol = 'TcpHighSpeed'
-buffer_size = '1500000'
-packet_size = '1400'
-#p2pdelay = '0'
-p2pdelay = '18'
-'''
 nodeNum = 6
 filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
@@ -56,10 +45,11 @@ def value_to_plot(trace):
 
 def get_y_lims(y_vals, trace):
     # should axes start from 0? or min(vals)? percentage padding?
-    if trace == 'RTT':
-        lims = min(y_vals), max(y_vals)
+    if trace == 'RTT' or trace == 'CWND':    # no rounding up, always start from 0
+        lims = 0, 1.1 * max(y_vals)
     else:
-        lims = math.floor(min(y_vals)), math.ceil(max(y_vals))
+        lims = 0.9 * math.floor(min(y_vals)), 1.1 * math.ceil(max(y_vals))
+        print(lims)
     return lims
 
 def get_label(trace):
@@ -68,7 +58,7 @@ def get_label(trace):
     if trace == 'RTT':
         return 'RTT (s)'
     if trace == 'DATA': 
-        return 'Throughput (Mb/s)'  # MB? Mb?????????
+        return 'Throughput (Mb/s)'
     if trace == 'MMWAVESINR':
         return 'SINR (dB)'
     if trace == 'LTESINR':
@@ -103,17 +93,15 @@ def new_y_axis_plot(x_vals, y_vals, trace):
     PLOT.axis[LOCATION].major_ticklabels.set_color(p1.get_color())
 
 def data_trace(x_vals):
-    #wndw = 0.1
     wndw = data_wndw
     wndw_start = 0.0
     wndw_end = wndw_start + wndw
     multiplier = 1/wndw
 
     wndw_cnt = 0
-    packet_cnt = 0
     packets_list = [0]   # element: n of packets rcvd in 0.1s
     for packet_arrive_time in x_vals:
-        if packet_arrive_time > wndw_start and packet_arrive_time < wndw_end:
+        if packet_arrive_time >= wndw_start and packet_arrive_time < wndw_end:
             packets_list[wndw_cnt] += 1
         else:
             wndw_cnt += 1
@@ -126,17 +114,13 @@ def data_trace(x_vals):
     for i in range(len(packets_list)):
         x_val = i * wndw
 
-        packetper100ms = packets_list[i]
-        #print(packetper100ms)
-        packetpers = packetper100ms * multiplier
-        #print('  ' + str(packetpers))
-        bytepers = packetpers * int(packet_size)
-        kbytepers = bytepers / 1000
-        #print('  ' + str(kbytepers) + ' KB/s')
-        mbytepers = kbytepers / 1000
-        #print('  ' + str(mbytepers) + ' MB/s')
+        packetperwndw = packets_list[i]
+        packetpers = packetperwndw * multiplier
+        bitpers = packetpers * (int(packet_size) * 8)
+        kbitpers = bitpers / 1000
+        mbitpers = kbitpers / 1000
 
-        y_val = mbytepers
+        y_val = mbitpers
 
         x_vals.append(float(x_val))
         y_vals.append(int(y_val))
@@ -240,7 +224,7 @@ multiplot_trace_files(nodes=args.nodes, traces=args.traces)
 if not os.path.isdir('png'): os.makedirs('png')
 plt.draw()
 #plt.show()
-#plt.savefig('./png/' + output_filename, bbox_inches='tight')
-plt.savefig('./png/' + output_filename + '.png')
+plt.savefig('./png/' + output_filename, bbox_inches='tight')
+#plt.savefig('./png/' + output_filename + '.png')
 
 
