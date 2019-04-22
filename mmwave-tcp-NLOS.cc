@@ -56,8 +56,15 @@ void ue_move (Ptr<ConstantVelocityMobilityModel> m, Vector velocity_vector)
 {
 	m->SetVelocity (velocity_vector); 
 	Vector pos = m->GetPosition ();
-	std::cout << "POS: x=" << pos.x << ", y=" << pos.y << std::endl;
+	std::cout << "(t=" << Simulator::Now ().GetSeconds () << ") " << "Moving from x=" << pos.x << ", y=" << pos.y << "    with velocity x=" << velocity_vector.x << ", y=" << velocity_vector.y << std::endl;
 }
+
+void ue_pos (Ptr<ConstantVelocityMobilityModel> m, Vector velocity_vector)
+{
+	Vector pos = m->GetPosition ();
+	std::cout << "(t=" << Simulator::Now ().GetSeconds () << ") " << "UE is at x=" << pos.x << ", y=" << pos.y << "    with velocity x=" << velocity_vector.x << ", y=" << velocity_vector.y  << std::endl;
+}
+
 
 static void
 Traces(uint16_t nodeNum, std::string protocol)
@@ -97,87 +104,14 @@ Traces(uint16_t nodeNum, std::string protocol)
 int
 main (int argc, char *argv[])
 {   
-	// LOS NLOS LOS
-	//sce16
-	/*Box building_box = Box (50,55, -20,20, 0,50);
-	Vector UE_start_pos = Vector (100, -60.0, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);*/
 
-	// NLOS LOS NLOS
-	//sce15
-	/*Box building_box = Box (50,55, 20,100, 0,50); 	// 25 helyett 20
-	Box building_box_2 = Box (50,55, -100,-20, 0,50); 
-	Vector UE_start_pos = Vector (100, -60.0, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);
-	*/
-	//sce14
-	Box building_box = Box (50,55, 25,100, 0,50); 	// building -5 mely
+	Box building_box = Box (50,55, 25,100, 0,50);
 	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
 	Vector UE_start_pos = Vector (100, -60.0, 1.5);
 	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
 	
-	//sce13
-	/*Box building_box = Box (50,60, 50,100, 0,50); 	// building +5 mely
-	Box building_box_2 = Box (50,60, -100,0, 0,50); 
-	Vector UE_start_pos = Vector (110, -20.0, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-	*/
-    // sce12
-    /*Box building_box = Box (50,55, 0,50, 0,50);   //100,115 is szar		//sce11 100,105
-    Vector UE_start_pos = Vector (110, -15.0, 1.5);     //150 szar		//sce11 110, -10
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-	*/
-    // sce10
-    /*Box building_box = Box (100,105, 0,50, 0,50);   //100,115 is szar
-    Vector UE_start_pos = Vector (110, -50.0, 1.5);     //150 szar
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-    */
-    // sce9
-    /*Box building_box = Box (100,125, 0,50, 0,50);
-    Vector UE_start_pos = Vector (150, -50.0, 1.5);
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-    */
-    // sce8
-    /*Box building_box = Box (150,200, 0,50, 0,50); 
-    Vector UE_start_pos = Vector (210, -50.0, 1.5);
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-    */
-    // sce7
-    /*Box building_box = Box (150,200, 0,50, 0,50);
-    Vector UE_start_pos = Vector (210, -50.0, 1.5);
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-    */
-    // sce6
-    /*Box building_box = Box (200,400, 0,50, 0,50); 
-    Box building_box = Box (350,400, 0,50, 0,50);              // sce6.1
-    Box building_box = Box (150,200, 0,50, 0,50);              // sce6.2
-    Vector UE_start_pos = Vector (250, -50.0, 1.5);            // sce6.2
-
-    Vector UE_start_pos = Vector (500, -50.0, 1.5);
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0); 
-    */
-    // sce4
-    /*Box building_box = Box (30,180, 0,50, 0,50); 
-    Vector UE_start_pos = Vector (190, -50.0, 1.5);
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0);
-    */
-    // sce3
-    /*Box building_box = Box (30,90, 0,50, 0,50);
-    Vector UE_start_pos = Vector (100, -50.0, hUT); 
-    Vector UE_velocity_vector = Vector (0.0, 5.0, 0.0); 
-    */
-    //                            ^ UE path
-    //        I               I   .
-    //        I   building    I   .
-    //        I_______________I   .   
-    // eNB                        .
-    //                            .
-    //                            .
-    //                            .
-    //                            .
-
-   //LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
-  // LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
+    //LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
+    // LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
 	double simStopTime = 8;
@@ -298,6 +232,7 @@ main (int argc, char *argv[])
 	Config::SetDefault ("ns3::TcpVegas::Alpha", UintegerValue (20));
 	Config::SetDefault ("ns3::TcpVegas::Beta", UintegerValue (40));
 	Config::SetDefault ("ns3::TcpVegas::Gamma", UintegerValue (2));
+
 
 
 	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::ChannelCondition", StringValue(condition));
@@ -436,6 +371,7 @@ main (int argc, char *argv[])
     uemobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");   
     Ptr<ListPositionAllocator> uePositionAlloc = CreateObject<ListPositionAllocator> ();
 	//uePositionAlloc->Add (Vector (75.0, -30.0, hUT));
+	UE_start_pos.z = hUT;
     uePositionAlloc->Add (UE_start_pos);
     uemobility.SetPositionAllocator (uePositionAlloc);
     uemobility.Install (ueNodes.Get (0));
@@ -445,7 +381,7 @@ main (int argc, char *argv[])
     //mob->SetVelocity( UE_velocity_vector);   // direction and velocity of UE in m/s
 	mob->SetVelocity (Vector (0, 0, 0));   // initially stationary
     Vector pos = mob->GetPosition ();
-    std::cout << "POS: x=" << pos.x << ", y=" << pos.y << std::endl;
+    std::cout << "Starting position: x=" << pos.x << ", y=" << pos.y << std::endl;
 
 	BuildingsHelper::Install (ueNodes);
 
@@ -463,7 +399,7 @@ main (int argc, char *argv[])
 	ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (mcUeDevs));
 
     mmwaveHelper->AddX2Interface (lteEnbNodes, mmWaveEnbNodes);
-    mmwaveHelper->AttachToClosestEnb (mcUeDevs, mmWaveEnbDevs, lteEnbDevs);  	//mmwaveHelper->EnableTraces ();
+    mmwaveHelper->AttachToClosestEnb (mcUeDevs, mmWaveEnbDevs, lteEnbDevs);
     mmwaveHelper->EnableTraces();
 
 	ApplicationContainer sourceApps;
@@ -481,11 +417,7 @@ main (int argc, char *argv[])
 		PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
 		sinkApps.Add (packetSinkHelper.Install (ueNodes.Get (i)));
 
-
-
-
-		BulkSendHelper ftp ("ns3::TcpSocketFactory",
-		                         InetSocketAddress (ueIpIface.GetAddress (i), sinkPort));
+		BulkSendHelper ftp ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (i), sinkPort));
 		sourceApps.Add (ftp.Install (remoteHostContainer.Get (i)));
 
 	    std::ostringstream fileName;
@@ -497,11 +429,9 @@ main (int argc, char *argv[])
 		sinkApps.Get(i)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
 	    sourceApps.Get(i)->SetStartTime(Seconds (0.1+0.01*i));
 	    Simulator::Schedule (Seconds (0.1001+0.01*i), &Traces, i, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
-	    //sourceApps.Get(i)->SetStopTime (Seconds (10-1.5*i));
 	    sourceApps.Get(i)->SetStopTime (Seconds (simStopTime));
 
 		sinkPort++;
-
 	}
 
 	sinkApps.Start (Seconds (0.));
@@ -509,19 +439,18 @@ main (int argc, char *argv[])
     //sourceAppsUL.Start (Seconds (0.1));
     //sourceApps.Stop (Seconds (simStopTime));
 
-
 	//p2ph.EnablePcapAll("mmwave-sgi-capture");
 	BuildingsHelper::MakeMobilityModelConsistent ();
 
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxPackets", UintegerValue (1000*1000));
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxBytes", UintegerValue (1500*1000*1000));
-    std::cout << hUT;
 
 	Simulator::Schedule (Seconds(1), &ue_move, mob, UE_velocity_vector);
+	for (int i=0; i<simStopTime; i++) {
+		Simulator::Schedule (Seconds(i), &ue_pos, mob, UE_velocity_vector);
+	}
 	Simulator::Stop (Seconds (simStopTime));
 	Simulator::Run ();
-    Vector pos2 = mob->GetPosition ();
-    std::cout << "POS: x=" << pos2.x << ", y=" << pos2.y << std::endl;
 	Simulator::Destroy ();
 
 	return 0;
