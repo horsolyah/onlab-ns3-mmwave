@@ -186,12 +186,12 @@ MmWave3gppPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
 		if (m_channelConditions.compare("l")==0 )
 		{
 			condition.m_channelCondition = 'l';
-			NS_LOG_UNCOND (m_scenario << " scenario, channel condition is fixed to be " << condition.m_channelCondition<<", h_BS="<<hBs<<",h_UT="<<hUt);
+			NS_LOG_UNCOND ("(t=" << Simulator::Now ().GetSeconds () << ") " << m_scenario << " scenario, channel condition is fixed to be " << condition.m_channelCondition<<", h_BS="<<hBs<<",h_UT="<<hUt);
 		}
 		else if (m_channelConditions.compare("n")==0)
 		{
 			condition.m_channelCondition = 'n';
-			NS_LOG_UNCOND (m_scenario << " scenario, channel condition is fixed to be " << condition.m_channelCondition<<", h_BS="<<hBs<<",h_UT="<<hUt);
+			NS_LOG_UNCOND ("(t=" << Simulator::Now ().GetSeconds () << ") " << m_scenario << " scenario, channel condition is fixed to be " << condition.m_channelCondition<<", h_BS="<<hBs<<",h_UT="<<hUt);
 		}
 		else if (m_channelConditions.compare("a")==0)
 		{
