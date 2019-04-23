@@ -7,9 +7,10 @@ import mpl_toolkits.axisartist as AA
 from mpl_toolkits.axes_grid1 import host_subplot
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
-parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="", choices=['1', '2', '3', '4', '5', '6'])
-parser.add_argument("--data-wndw", default='0.05', nargs='?', help="")
+parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="Select data trace to plot.", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
+parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="Select which nodes' trace files should be plotted.", choices=['1', '2', '3', '4', '5', '6'])
+parser.add_argument("--data-wndw", default='0.05', nargs='?', help="Resolution of x axis (tick size) in seconds.")
+parser.add_argument("--figsize", default='5,4', nargs='?', help="Figure size in inches delimited by a comma e.g. 11,4")
 args = parser.parse_args()
 
 filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
@@ -28,7 +29,9 @@ filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
 
-host = host_subplot(111, axes_class=AA.Axes)
+figsize = tuple(map(lambda n: int(n), args.figsize.split(',')))
+figure = plt.figure(figsize=figsize)
+host = host_subplot(111, axes_class=AA.Axes, figure=figure)
 y_plots = []
 multiplot_cnt = 0   # post-increment
 
@@ -191,7 +194,7 @@ def plot_trace_file(nodes=None, trace=''):
         
         host.set_xlabel("Time (s)")
         host.set_xlim(math.floor(min(x_vals)), math.ceil(max(x_vals)))
-        host.legend()
+        #host.legend()
         
         #plt.axis('tight')
         '''
@@ -211,8 +214,6 @@ def plot_trace_file(nodes=None, trace=''):
     multiplot_cnt += 1
 
 def multiplot_trace_files(nodes=None, traces=None):
-    #2plt.figure(figsize=(11,4))
-
     for trace in traces:
         if trace != traces[0] and trace != traces[-1]: 
             global output_filename

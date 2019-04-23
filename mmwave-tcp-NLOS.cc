@@ -36,6 +36,13 @@ RttChange (Ptr<OutputStreamWrapper> stream, Time oldRtt, Time newRtt)
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldRtt.GetSeconds () << "\t" << newRtt.GetSeconds () << std::endl;
 }
 
+static void
+StateChange (Ptr<OutputStreamWrapper> stream, TcpSocketState::TcpCongState_t oldState, TcpSocketState::TcpCongState_t newState)
+{
+	std::cout << "(t=" << Simulator::Now ().GetSeconds () << ") " << " TCP CongState changed from " << oldState << " to " << newState << std::endl;
+	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldState << "\t" << newState << std::endl;
+}
+
 static void Rx (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet, const Address &from)
 {
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << packet->GetSize()<< std::endl;
@@ -89,6 +96,12 @@ Traces(uint16_t nodeNum, std::string protocol)
 	std::ostringstream fileRCWnd;
 	fileRCWnd<<protocol<<"-"<<nodeNum+1<<"-TCP-RCWND.txt";
 
+	std::ostringstream pathSTATE;
+	pathSTATE<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/CongState";
+
+	std::ostringstream fileSTATE;
+	fileSTATE<<protocol<<"-"<<nodeNum+1<<"-TCP-CONGSTATE.txt";
+
 	Ptr<OutputStreamWrapper> stream1 = asciiTraceHelper.CreateFileStream (fileCW.str ().c_str ());
 	Config::ConnectWithoutContext (pathCW.str ().c_str (), MakeBoundCallback(&CwndChange, stream1));
 
@@ -98,6 +111,9 @@ Traces(uint16_t nodeNum, std::string protocol)
 	Ptr<OutputStreamWrapper> stream4 = asciiTraceHelper.CreateFileStream (fileRCWnd.str ().c_str ());
 	Config::ConnectWithoutContext (pathRCWnd.str ().c_str (), MakeBoundCallback(&CwndChange, stream4));
 
+	Ptr<OutputStreamWrapper> stream5 = asciiTraceHelper.CreateFileStream (fileSTATE.str ().c_str ());
+	Config::ConnectWithoutContext (pathSTATE.str ().c_str (), MakeBoundCallback(&StateChange, stream5));
+	
 }
 
 
