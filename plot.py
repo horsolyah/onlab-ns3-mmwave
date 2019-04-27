@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os, sys, re, math
 import argparse
 import matplotlib.style as mplstyle
@@ -14,7 +16,7 @@ parser.add_argument("--figsize", default='5,4', nargs='?', help="Figure size in 
 args = parser.parse_args()
 
 filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
-BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+BASE_PATH = os.getcwd()
 files = [f for f in os.listdir(BASE_PATH) if os.path.isfile(f)]
 for filename in files:
     match = re.match(filename_regex, filename)
@@ -136,11 +138,10 @@ def plot_trace_file(nodes=None, trace=''):
 
     global multiplot_cnt, output_filename
 
-    if not nodes: 
-        nodes = ['1']
-        output_filename += trace # TODO
+    if not nodes or len(nodes) < 2:
+        output_filename += trace
     else:
-        output_filename += '-'.join(['-'.join(nodes), trace]) # TODO
+        output_filename += '-'.join(['-'.join(nodes), trace])
 
     if trace == 'MMWAVESINR':
         trace_filename = 'MmWaveSinrTime.txt'
@@ -193,7 +194,7 @@ def plot_trace_file(nodes=None, trace=''):
         new_y_axis_plot(x_vals, y_vals, trace)
         
         host.set_xlabel("Time (s)")
-        host.set_xlim(math.floor(min(x_vals)), math.ceil(max(x_vals)))
+        host.set_xlim(math.floor(min(x_vals)), 1.005 * max(x_vals))
         #host.legend()
         
         #plt.axis('tight')
@@ -215,7 +216,7 @@ def plot_trace_file(nodes=None, trace=''):
 
 def multiplot_trace_files(nodes=None, traces=None):
     for trace in traces:
-        if trace != traces[0] and trace != traces[-1]: 
+        if trace != traces[0]: 
             global output_filename
             output_filename += '_'
         plot_trace_file(nodes=nodes, trace=trace)
