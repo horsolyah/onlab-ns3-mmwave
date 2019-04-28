@@ -13,6 +13,8 @@ parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="Select 
 parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="Select which nodes' trace files should be plotted.", choices=['1', '2', '3', '4', '5', '6'])
 parser.add_argument("--data-wndw", default='0.05', nargs='?', help="Resolution of x axis (tick size) in seconds.")
 parser.add_argument("--figsize", default='5,4', nargs='?', help="Figure size in inches delimited by a comma e.g. 11,4")
+parser.add_argument("--linestyle", default='-', nargs='?', help="Matplotlib line style string.")
+parser.add_argument("--marker", default='', nargs='?', help="Matplotlib marker style string.")
 args = parser.parse_args()
 
 filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
@@ -89,7 +91,7 @@ def new_y_axis_plot(x_vals, y_vals, trace):
     PLOT.set_ylabel(get_label(trace))
     PLOT.set_ylim(get_y_lims(y_vals, trace))
 
-    p1, = PLOT.plot(x_vals, y_vals, label=get_label(trace))    # plot call
+    p1, = PLOT.plot(x_vals, y_vals, label=get_label(trace), linestyle=args.linestyle, marker=args.marker)    # plot call
 
     PLOT.axis[LOCATION].toggle(all=True)
     PLOT.axis[LOCATION].label.set_color(p1.get_color())
