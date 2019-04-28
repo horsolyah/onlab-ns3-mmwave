@@ -1,8 +1,10 @@
-import subprocess
+#!/usr/bin/env python3
 
-traces = ['CWND', 'RCWND', 'RTT']
-nodeses = ['', '1 3 5', '2 4 6']
+import subprocess, os, sys
 
-for trace in traces:
-    for nodes in nodeses:
-        subprocess.call('python3 plot.py {} {}'.format(nodes, trace), shell=True)
+fig_width = sys.argv[1] if len(sys.argv) > 1 else '7'
+
+traceses = ["MMWAVESINR CWND", "DATA RTT", "MMWAVESINR CWND RTT DATA"]
+
+for traces in traceses:
+    subprocess.call('plot.py --trace {} --figsize {},4 --data-wndw 0.01'.format(traces, fig_width), shell=True, cwd=os.getcwd())
