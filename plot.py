@@ -126,7 +126,7 @@ def new_y_axis_plot(x_vals, y_vals, trace):
     PLOT.axis[LOCATION].major_ticks.set_color(p1.get_color())
     PLOT.axis[LOCATION].major_ticklabels.set_color(p1.get_color())
 
-def data_trace(x_vals):
+def data_trace(x_vals, y_vals):
     wndw = data_wndw
     wndw_start = 0.0
     wndw_end = wndw_start + wndw
@@ -134,7 +134,13 @@ def data_trace(x_vals):
 
     wndw_cnt = 0
     packets_list = [0]   # element: n of packets rcvd in 0.1s
-    for packet_arrive_time in x_vals:
+
+    # iterate over lines in trace file
+    for i in enumerate(x_vals):
+        packet_arrive_time = x_vals[i]
+        packet_size = y_vals[i]
+
+        # count how many packets fit into given window (tick)
         if packet_arrive_time >= wndw_start and packet_arrive_time < wndw_end:
             packets_list[wndw_cnt] += 1
         else:
@@ -145,6 +151,7 @@ def data_trace(x_vals):
 
     x_vals, y_vals = [], []
 
+    # iterate over quantitized windows (ticks)
     for i in range(len(packets_list)):
         x_val = i * wndw
 
@@ -209,7 +216,7 @@ def plot_trace_file(nodes=None, trace=''):
                     y_vals.append(int(y_val))
 
         if trace == 'DATA': 
-            (x_vals, y_vals) = data_trace(x_vals)
+            (x_vals, y_vals) = data_trace(x_vals, y_vals)
 
         #color_index = int(i)-1
         # color_index = (multiplot_cnt + int(i)-1) % len(colors)    # todo test
@@ -249,6 +256,7 @@ def multiplot_trace_files(nodes=None, traces=None):
             global output_filename
             output_filename += '_'
         plot_trace_file(nodes=nodes, trace=trace)
+    output_filename += '_' + str(figsize[0]) + 'x' + str(figsize[1])
 
 multiplot_trace_files(nodes=args.nodes, traces=args.traces)
 
