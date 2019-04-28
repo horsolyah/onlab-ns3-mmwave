@@ -72,13 +72,13 @@ def get_label(trace):
         return 'SINR'
 
 def get_linestyle(trace):
-    if trace == 'RTT' or trace == 'CWND':
+    if trace == 'RTT' or trace == 'CWND' or trace == 'RCWND':
         return ''
     else:
         return '-'
 
 def get_marker(trace):
-    if trace == 'RTT' or trace == 'CWND':
+    if trace == 'RTT' or trace == 'CWND' or trace == 'RCWND':
         return '.'
     else:
         return ''
@@ -133,16 +133,16 @@ def data_trace(x_vals, y_vals):
     multiplier = 1/wndw
 
     wndw_cnt = 0
-    packets_list = [0]   # element: n of packets rcvd in 0.1s
+    packets_list = [0]   # element: sum of the size of packets rcvd in wndw (e.g. 0.1 s) in bits    e.g. [20000, 26000, 34000, 42000] need to be multiplied by multiplier!
 
     # iterate over lines in trace file
-    for i in enumerate(x_vals):
+    for i in range(len(x_vals)):
         packet_arrive_time = x_vals[i]
-        packet_size = y_vals[i]
+        packet_size = y_vals[i] * 8    # in bits
 
         # count how many packets fit into given window (tick)
         if packet_arrive_time >= wndw_start and packet_arrive_time < wndw_end:
-            packets_list[wndw_cnt] += 1
+            packets_list[wndw_cnt] += packet_size
         else:
             wndw_cnt += 1
             packets_list.append(0)
@@ -155,9 +155,7 @@ def data_trace(x_vals, y_vals):
     for i in range(len(packets_list)):
         x_val = i * wndw
 
-        packetperwndw = packets_list[i]
-        packetpers = packetperwndw * multiplier
-        bitpers = packetpers * (int(packet_size) * 8)
+        bitpers = packets_list[i] * multiplier
         kbitpers = bitpers / 1000
         mbitpers = kbitpers / 1000
 
@@ -188,8 +186,6 @@ def plot_trace_file(nodes=None, trace=''):
         if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:   
             trace_filename = '-'.join([filename_base, i, 'TCP', trace + '.txt'])
 
-        plot_style = 's' if trace == 'RCWND' else '-'
-
         x_vals, y_vals = [], []
 
         with open(trace_filename, 'r') as f:
@@ -217,13 +213,6 @@ def plot_trace_file(nodes=None, trace=''):
 
         if trace == 'DATA': 
             (x_vals, y_vals) = data_trace(x_vals, y_vals)
-
-        #color_index = int(i)-1
-        # color_index = (multiplot_cnt + int(i)-1) % len(colors)    # todo test
-        color_index = multiplot_cnt
-        ### this was used ##plt.plot(x_vals, y_vals, colors[color_index]+plot_style, linewidth=0.5, antialiased=False, label='Node '+i+' '+trace)
-        #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
-
         
         plt.subplots_adjust(right=0.75)
 
