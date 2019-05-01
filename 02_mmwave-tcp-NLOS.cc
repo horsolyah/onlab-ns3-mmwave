@@ -132,16 +132,16 @@ int
 main (int argc, char *argv[])
 {   
 
-	Box building_box = Box (50,55, 25,100, 0,50);
-	Box building_box_2 = Box (50,55, -100,-25, 0,50); 
-	Vector UE_start_pos = Vector (100, -60.0, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
+	Box building_box = Box (50,61, -75,75, 0,50);
+	//Box building_box_2 = Box (50,55, -100,-25, 0,50); 
+	Vector UE_start_pos = Vector (100, 0.0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 0.0, 0.0);	// 50 / 8 = 6.25
 	
 	//LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
-	double simStopTime = 8;
+	double simStopTime = 2.5;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -188,7 +188,6 @@ main (int argc, char *argv[])
 	Config::SetDefault ("ns3::LteRlcAm::StatusProhibitTimer", TimeValue(MilliSeconds(1.0)));
 	Config::SetDefault ("ns3::LteRlcAm::ReportBufferStatusTimer", TimeValue(MilliSeconds(2.0)));
 	Config::SetDefault ("ns3::LteRlcAm::MaxTxBufferSize", UintegerValue (bufferSize));
-	Config::SetDefault ("ns3::LteRlcAm::EnableAQM", BooleanValue(true));
 	Config::SetDefault ("ns3::QueueBase::MaxPackets", UintegerValue (100*1000));
 
 	Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
@@ -267,7 +266,7 @@ main (int argc, char *argv[])
 	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::Scenario", StringValue(scenario));
 	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::OptionalNlos", BooleanValue(false));
 	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::Shadowing", BooleanValue(true)); // enable or disable the shadowing effect
-	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::InCar", BooleanValue(false)); // enable or disable the shadowing effect
+	Config::SetDefault ("ns3::MmWave3gppPropagationLossModel::InCar", BooleanValue(true)); // enable or disable the shadowing effect
 
 
 
@@ -368,12 +367,12 @@ main (int argc, char *argv[])
 	building->SetNRoomsX (1);
 	building->SetNRoomsY (1);
 
-	Ptr < Building > building2;
+	/*Ptr < Building > building2;
 	building2 = Create<Building> ();
 	building2->SetBoundaries (building_box_2);
 	building2->SetNFloors (1);
 	building2->SetNRoomsX (1);
-	building2->SetNRoomsY (1);
+	building2->SetNRoomsY (1);*/
 	
 
 	NodeContainer ueNodes;
