@@ -132,9 +132,9 @@ int
 main (int argc, char *argv[])
 {   
 
-	Box building_box = Box (37.5,50, 16.66,29.16, 0,50);
+	Box building_box_1 = Box (37.5,50, 16.66,29.16, 0,50);
 	Box building_box_2 = Box (37.5,50, -6.25,6.25, 0,50); 
-	Box building_box_3 = Box (37.5,50, -16.66,-29.16, 0,50); 
+	Box building_box_3 = Box (37.5,50, -29.16,-16.66, 0,50); 
 	Vector UE_start_pos = Vector (75, -37.5, 1.5);
 	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
 	
@@ -142,7 +142,7 @@ main (int argc, char *argv[])
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
-	double simStopTime = 12;
+	double simStopTime = 12.01;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -362,12 +362,12 @@ main (int argc, char *argv[])
 		p2ph.EnablePcap ("netdevice", remoteHost->GetId (), 1);
 	}
 
-	Ptr < Building > building;
-	building = Create<Building> ();
-	building->SetBoundaries (building_box);
-	building->SetNFloors (1);
-	building->SetNRoomsX (1);
-	building->SetNRoomsY (1);
+	Ptr < Building > building1;
+	building1 = Create<Building> ();
+	building1->SetBoundaries (building_box_1);
+	building1->SetNFloors (1);
+	building1->SetNRoomsX (1);
+	building1->SetNRoomsY (1);
 
 	Ptr < Building > building2;
 	building2 = Create<Building> ();
@@ -480,7 +480,7 @@ main (int argc, char *argv[])
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxPackets", UintegerValue (1000*1000));
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxBytes", UintegerValue (1500*1000*1000));
 
-	Simulator::Schedule (Seconds(1), &ue_move, mob, UE_velocity_vector);
+	Simulator::Schedule (Seconds(0), &ue_move, mob, UE_velocity_vector);
 	for (int i=0; i<simStopTime; i++) {
 		Simulator::Schedule (Seconds(i), &ue_pos, mob, UE_velocity_vector);
 	}
