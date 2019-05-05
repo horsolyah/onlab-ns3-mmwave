@@ -202,7 +202,7 @@ main (int argc, char *argv[])
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
-	double simStopTime = 1.01;
+	double simStopTime = 3.51;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -334,10 +334,49 @@ main (int argc, char *argv[])
 	// Create two RemoteHost objects
 	NodeContainer remoteHostContainer;
 	remoteHostContainer.Create (2);
+
+	// Create internet router
+	NodeContainer routerContainer;
+	routerContainer.Create (1);
+
 	InternetStackHelper internet;
 	internet.Install (remoteHostContainer);
+	internet.Install (routerContainer);
+
+	
 	Ipv4StaticRoutingHelper ipv4RoutingHelper;
 	Ipv4InterfaceContainer internetIpIfaces;
+
+	PointToPointHelper internetp2ph;
+	internetp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("10Gb/s")));
+	internetp2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
+	internetp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (2)));
+
+	PointToPointHelper bottleneckp2ph;
+	bottleneckp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("10Mb/s")));
+	bottleneckp2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
+	bottleneckp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (7)));
+
+	//  [remoteHost1]
+	//                >---  [router]  --(bottleneck link)--  [pgw]
+	//  [remoteHost2]
+	//
+
+	NetDeviceContainer bottleneckLink = bottleneckp2ph.Install (pgw, routerContainer.Get (0));
+	Ipv4AddressHelper ipv4h;
+	ipv4h.SetBase ("100.1.0.0", "255.255.0.0");
+	internetIpIfaces = ipv4h.Assign (bottleneckLink);
+	// interface 0 is localhost, 1 is the p2p device
+	Ptr<Ipv4StaticRouting> routerStaticRouting = ipv4RoutingHelper.GetStaticRouting (routerContainer.Get (0)->GetObject<Ipv4> ());
+	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);	// if 2: acks retransmissions visible
+	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
+	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("1.1.0.0"), Ipv4Mask ("255.255.0.0"), 3);
+	//routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("100.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
+
+	Ptr<Ipv4StaticRouting> pgwStaticRouting = ipv4RoutingHelper.GetStaticRouting (pgw->GetObject<Ipv4> ());
+	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);	// if 1: forward packet to 7.0.0.0   if 2: acks retransmissions visible
+	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2); // if 2: seems ok, fails at router!
+	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("1.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
 
 	for (uint16_t i = 0; i < 2; i++)
 	{
@@ -345,17 +384,12 @@ main (int argc, char *argv[])
 			set_protocol ("TcpBbr");	// primary sender is always TCP BBR
 		} 
 		else {
-			set_protocol (protocol);	// secondary sender
+			set_protocol ("TcpBbr");	// secondary sender
+			//set_protocol (protocol);	// secondary sender
 		}
 
 		Ptr<Node> remoteHost = remoteHostContainer.Get (i);
-		// Create the Internet
-		PointToPointHelper p2ph;
-		p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Mb/s")));
-		p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
-		p2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (p2pDelay)));
-
-		NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+		NetDeviceContainer internetDevices = internetp2ph.Install (routerContainer.Get (0), remoteHost);	// pgw was here
 
 		Ipv4AddressHelper ipv4h;
 		std::ostringstream subnet;
@@ -364,11 +398,13 @@ main (int argc, char *argv[])
 		internetIpIfaces = ipv4h.Assign (internetDevices);
 		// interface 0 is localhost, 1 is the p2p device
 		Ptr<Ipv4StaticRouting> remoteHostStaticRouting = ipv4RoutingHelper.GetStaticRouting (remoteHost->GetObject<Ipv4> ());
-		remoteHostStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);
+		remoteHostStaticRouting->AddNetworkRouteTo (Ipv4Address ("100.1.0.0"), Ipv4Mask ("255.255.0.0"), 1);
+		Ptr<Ipv4StaticRouting> remoteHostStaticRouting2 = ipv4RoutingHelper.GetStaticRouting (remoteHost->GetObject<Ipv4> ());
+		remoteHostStaticRouting2->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);
 
-		//p2ph.EnablePcapAll("mmwave-sgi-capture");
+		//internetp2ph.EnablePcapAll("mmwave-sgi-capture");
 		std::cout << "GetId(): " << remoteHost->GetId () << std::endl;
-		p2ph.EnablePcap ("netdevice", remoteHost->GetId (), 1);
+		internetp2ph.EnablePcap ("netdevice", remoteHost->GetId (), 1);
 	}
 
 	Ptr < Building > building1;
@@ -465,12 +501,12 @@ main (int argc, char *argv[])
 		sourceApps.Add (ftp.Install (remoteHostContainer.Get (i)));
 
 		std::ostringstream fileName;
-		fileName<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-"<<0+1<<"-TCP-DATA.txt";
+		fileName<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-1-"<<i<<"-TCP-DATA.txt";	// nodenum fixed
 
 		AsciiTraceHelper asciiTraceHelper;
 
 		Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ().c_str ());
-		sinkApps.Get(0)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
+		sinkApps.Get(i)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
 		sourceApps.Get(i)->SetStartTime(Seconds (0.1+0.01*i));
 		Simulator::Schedule (Seconds (0.1001+0.01*i), &Traces, 0, i, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 		sourceApps.Get(i)->SetStopTime (Seconds (simStopTime));
@@ -483,7 +519,8 @@ main (int argc, char *argv[])
 	//sourceAppsUL.Start (Seconds (0.1));
 	//sourceApps.Stop (Seconds (simStopTime));
 
-	//p2ph.EnablePcapAll("mmwave-sgi-capture");
+	//internetp2ph.EnablePcapAll("mmwave-sgi-capture");
+	//bottleneckp2ph.EnablePcapAll("mmwave-sgi-capture_bottleneck");
 	BuildingsHelper::MakeMobilityModelConsistent ();
 
 	Config::Set ("/NodeList/*/DeviceList/*/TxQueue/MaxPackets", UintegerValue (1000*1000));
@@ -500,3 +537,4 @@ main (int argc, char *argv[])
 	return 0;
 
 }
+

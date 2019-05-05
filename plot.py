@@ -13,9 +13,13 @@ parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="Select 
 parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="Select which nodes' trace files should be plotted.", choices=['1', '2', '3', '4', '5', '6'])
 parser.add_argument("--data-wndw", default='0.05', nargs='?', help="Resolution of x axis (tick size) in seconds.")
 parser.add_argument("--figsize", default='5,4', nargs='?', help="Figure size in inches delimited by a comma e.g. 11,4")
+parser.add_argument("--index", default='0', nargs='?', help="Index of server in case of multi-server/multiprotocol scenario.", choices=['0', '1'])
 #parser.add_argument("--linestyle", default='NONE', nargs='?', help="Matplotlib line style string.")
 #parser.add_argument("--marker", default='NONE', nargs='?', help="Matplotlib marker style string.")
 args = parser.parse_args()
+args.index = int(args.index)
+
+single_server = False
 
 filename_regex = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-([\w]*).txt'
 BASE_PATH = os.getcwd()
@@ -23,10 +27,32 @@ files = [f for f in os.listdir(BASE_PATH) if os.path.isfile(f)]
 for filename in files:
     match = re.match(filename_regex, filename)
     if match:    # obtain simulation parameters from the first file it finds
+        single_server = True
         protocol = match[1]
         buffer_size = match[2]
         packet_size = match[3]
         p2pdelay = match[4]
+
+if not single_server:
+    # multi server mode - assume 2 servers
+    protocols_list = []
+
+    filename_regex_multiprotocol = '(Tcp[\w]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\d]*)-([\w]*)-RTT.txt'
+    filenames = [x for x in files if re.match(filename_regex_multiprotocol, x)]
+    protocol_list = [re.match(filename_regex_multiprotocol, x)[1] for x in filenames]
+
+    print(protocol_list)
+    print('Plotting server no. {} ({})'.format(args.index, protocol_list[args.index]))
+
+    protocol = protocol_list[args.index]
+    filename = filenames[args.index]
+    match = re.match(filename_regex_multiprotocol, filename)
+    buffer_size = match[2]
+    packet_size = match[3]
+    p2pdelay = match[4]
+    server_num = match[6]
+
+multi_server = True if not single_server else False
 
 nodeNum = 6
 filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
@@ -183,8 +209,13 @@ def plot_trace_file(nodes=None, trace=''):
         trace_filename = 'LteSinrTime.txt'
     
     for i in nodes:
-        if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:   
-            trace_filename = '-'.join([filename_base, i, 'TCP', trace + '.txt'])
+        if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:
+            if not multi_server:
+                print('Single server')
+                trace_filename = '-'.join([filename_base, i, 'TCP', trace + '.txt'])
+            else:
+                print('Multi server')
+                trace_filename = '-'.join([filename_base, i, str(args.index), 'TCP', trace + '.txt'])
 
         x_vals, y_vals = [], []
 
