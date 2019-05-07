@@ -11,6 +11,9 @@
 #include "ns3/applications-module.h"
 #include "ns3/point-to-point-helper.h"
 #include "ns3/config-store.h"
+#include "ns3/traffic-control-module.h"
+#include "ns3/internet-apps-module.h"
+#include "ns3/flow-monitor-module.h"
 #include <ns3/buildings-helper.h>
 #include <ns3/buildings-module.h>
 #include <ns3/packet.h>
@@ -125,6 +128,28 @@ Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
 	Ptr<OutputStreamWrapper> stream6 = asciiTraceHelper.CreateFileStream (fileCONGSTATE.str ().c_str ());
 	Config::ConnectWithoutContext (pathCONGSTATE.str ().c_str (), MakeBoundCallback(&CongStateChange, stream6));
 
+	
+	std::ostringstream a;
+	a<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RTT";
+	std::ostringstream b;
+	b<<protocol<<"-"<<1<<"-"<<1<<"-TCP-RTT.txt";
+	Ptr<OutputStreamWrapper> streama = asciiTraceHelper.CreateFileStream (b.str ().c_str ());
+	Config::ConnectWithoutContext (a.str ().c_str (), MakeBoundCallback(&RttChange, streama));
+
+	std::ostringstream aa;
+	aa<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<1<<"/RTT";
+	std::ostringstream bb;
+	bb<<protocol<<"-"<<1<<"-"<<2<<"-TCP-RTT.txt";
+	Ptr<OutputStreamWrapper> streamb = asciiTraceHelper.CreateFileStream (bb.str ().c_str ());
+	Config::ConnectWithoutContext (aa.str ().c_str (), MakeBoundCallback(&RttChange, streamb));
+
+	std::ostringstream aaa;
+	aaa<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<2<<"/RTT";
+	std::ostringstream bbb;
+	bbb<<protocol<<"-"<<1<<"-"<<3<<"-TCP-RTT.txt";
+	Ptr<OutputStreamWrapper> streamc = asciiTraceHelper.CreateFileStream (bbb.str ().c_str ());
+	Config::ConnectWithoutContext (aaa.str ().c_str (), MakeBoundCallback(&RttChange, streamc));
+
 }
 
 static void set_protocol(std::string protocol) 
@@ -202,7 +227,7 @@ main (int argc, char *argv[])
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 1;
-	double simStopTime = 3.51;
+	double simStopTime = 4.51;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -353,9 +378,10 @@ main (int argc, char *argv[])
 	internetp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (2)));
 
 	PointToPointHelper bottleneckp2ph;
-	bottleneckp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("10Mb/s")));
+	bottleneckp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Mb/s")));
 	bottleneckp2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
 	bottleneckp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (7)));
+	//bottleneckp2ph.SetQueue ("ns3::DropTailQueue");	// queue method 2
 
 	//  [remoteHost1]
 	//                >---  [router]  --(bottleneck link)--  [pgw]
@@ -363,6 +389,17 @@ main (int argc, char *argv[])
 	//
 
 	NetDeviceContainer bottleneckLink = bottleneckp2ph.Install (pgw, routerContainer.Get (0));
+
+	 // queue method 1
+	TrafficControlHelper tchBottleneck;
+	tchBottleneck.SetRootQueueDisc ("ns3::CoDelQueueDisc");
+	// Config::SetDefault ("ns3::CoDelQueueDisc::MaxSize", ns3::QueueSizeValue (ns3::QueueSize (ns3::QueueSizeUnit::PACKETS, 50000))); // ns3.29 specific
+	Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (50000));
+
+	QueueDiscContainer qdiscs;
+	qdiscs = tchBottleneck.Install (bottleneckLink);
+	
+
 	Ipv4AddressHelper ipv4h;
 	ipv4h.SetBase ("100.1.0.0", "255.255.0.0");
 	internetIpIfaces = ipv4h.Assign (bottleneckLink);
@@ -507,7 +544,7 @@ main (int argc, char *argv[])
 
 		Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ().c_str ());
 		sinkApps.Get(i)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
-		sourceApps.Get(i)->SetStartTime(Seconds (0.1+0.01*i));
+		sourceApps.Get(i)->SetStartTime(Seconds (0.1+1.0*i));
 		Simulator::Schedule (Seconds (0.1001+0.01*i), &Traces, 0, i, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 		sourceApps.Get(i)->SetStopTime (Seconds (simStopTime));
 

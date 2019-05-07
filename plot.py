@@ -52,9 +52,6 @@ if not single_server:
     p2pdelay = match[4]
     server_num = match[6]
 
-multi_server = True if not single_server else False
-
-nodeNum = 6
 filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
@@ -210,7 +207,7 @@ def plot_trace_file(nodes=None, trace=''):
     
     for i in nodes:
         if trace in ['CWND', 'RCWND', 'RTT', 'DATA']:
-            if not multi_server:
+            if single_server:
                 print('Single server')
                 trace_filename = '-'.join([filename_base, i, 'TCP', trace + '.txt'])
             else:
