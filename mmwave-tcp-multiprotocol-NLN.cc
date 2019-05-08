@@ -89,29 +89,29 @@ Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
 	AsciiTraceHelper asciiTraceHelper;
 
 	std::ostringstream pathCW;
-	pathCW<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/CongestionWindow";
+	pathCW<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/CongestionWindow";
 	std::ostringstream fileCW;
-	fileCW<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum<<"-TCP-CWND.txt";
+	fileCW<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum+1<<"-TCP-CWND.txt";
 
 	std::ostringstream pathRTT;
-	pathRTT<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RTT";
+	pathRTT<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/RTT";
 	std::ostringstream fileRTT;
-	fileRTT<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum<<"-TCP-RTT.txt";
+	fileRTT<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum+1<<"-TCP-RTT.txt";
 
 	std::ostringstream pathRCWnd;
-	pathRCWnd<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RWND";
+	pathRCWnd<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/RWND";
 	std::ostringstream fileRCWnd;
-	fileRCWnd<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum<<"-TCP-RCWND.txt";
+	fileRCWnd<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum+1<<"-TCP-RCWND.txt";
 
 	std::ostringstream pathSTATE;
-	pathSTATE<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/State";
+	pathSTATE<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/State";
 	std::ostringstream fileSTATE;
-	fileSTATE<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum<<"-TCP-STATE.txt";
+	fileSTATE<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum+1<<"-TCP-STATE.txt";
 
 	std::ostringstream pathCONGSTATE;
-	pathCONGSTATE<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/CongState";
+	pathCONGSTATE<<"/NodeList/"<<nodeNum+2<<"/$ns3::TcpL4Protocol/SocketList/0/CongState";
 	std::ostringstream fileCONGSTATE;
-	fileCONGSTATE<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum<<"-TCP-CONGSTATE.txt";
+	fileCONGSTATE<<protocol<<"-"<<nodeNum+1<<"-"<<remotehostNum+1<<"-TCP-CONGSTATE.txt";
 
 	Ptr<OutputStreamWrapper> stream1 = asciiTraceHelper.CreateFileStream (fileCW.str ().c_str ());
 	Config::ConnectWithoutContext (pathCW.str ().c_str (), MakeBoundCallback(&CwndChange, stream1));
@@ -128,23 +128,23 @@ Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
 	Ptr<OutputStreamWrapper> stream6 = asciiTraceHelper.CreateFileStream (fileCONGSTATE.str ().c_str ());
 	Config::ConnectWithoutContext (pathCONGSTATE.str ().c_str (), MakeBoundCallback(&CongStateChange, stream6));
 
-	
+	/*
 	std::ostringstream a;
-	a<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RTT";
+	a<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RTT";
 	std::ostringstream b;
 	b<<protocol<<"-"<<1<<"-"<<1<<"-TCP-RTT.txt";
 	Ptr<OutputStreamWrapper> streama = asciiTraceHelper.CreateFileStream (b.str ().c_str ());
 	Config::ConnectWithoutContext (a.str ().c_str (), MakeBoundCallback(&RttChange, streama));
 
-	/*std::ostringstream aa;
-	aa<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<1<<"/RTT";
+	std::ostringstream aa;
+	aa<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<1<<"/RTT";
 	std::ostringstream bb;
 	bb<<protocol<<"-"<<1<<"-"<<2<<"-TCP-RTT.txt";
 	Ptr<OutputStreamWrapper> streamb = asciiTraceHelper.CreateFileStream (bb.str ().c_str ());
 	Config::ConnectWithoutContext (aa.str ().c_str (), MakeBoundCallback(&RttChange, streamb));
 
 	std::ostringstream aaa;
-	aaa<<"/NodeList/"<<3<<"/$ns3::TcpL4Protocol/SocketList/"<<2<<"/RTT";
+	aaa<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<2<<"/RTT";
 	std::ostringstream bbb;
 	bbb<<protocol<<"-"<<1<<"-"<<3<<"-TCP-RTT.txt";
 	Ptr<OutputStreamWrapper> streamc = asciiTraceHelper.CreateFileStream (bbb.str ().c_str ());
@@ -441,8 +441,8 @@ main (int argc, char *argv[])
 
 		
 
-		Ptr<Socket> localSocket = Socket::CreateSocket (remoteHost, TcpSocketFactory::GetTypeId ());
-		localSocket->Bind ();
+		//Ptr<Socket> localSocket = Socket::CreateSocket (remoteHost, TcpSocketFactory::GetTypeId ());
+		//localSocket->Bind ();
 
 
 		Ipv4AddressHelper ipv4h;
@@ -576,14 +576,14 @@ main (int argc, char *argv[])
 	dstSocket->Bind (dst);*/
 
 	std::ostringstream fileName;
-	fileName<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-1-"<<0<<"-TCP-DATA.txt";	// nodenum fixed
+	fileName<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-1-1"<<"-TCP-DATA.txt";
 
 	AsciiTraceHelper asciiTraceHelper;
 
 	Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ().c_str ());
 	sinkApps.Get(0)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
-	sourceApps.Get(0)->SetStartTime(Seconds (0.1+0.4*1));
-	Simulator::Schedule (Seconds (0.1001+0.01*0), &Traces, 0, 0, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
+	sourceApps.Get(0)->SetStartTime(Seconds (0.1+1.0*1));
+	Simulator::Schedule (Seconds (0.1001+1.0*1), &Traces, 0, 0, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 	sourceApps.Get(0)->SetStopTime (Seconds (simStopTime));
 
 	sinkPort++;
@@ -595,20 +595,20 @@ main (int argc, char *argv[])
 
 	// Install and start applications on UEs and remote host
 	PacketSinkHelper packetSinkHelper1 ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
-	sinkApps.Add (packetSinkHelper1.Install (ueNodes.Get (1)));
+	sinkApps.Add (packetSinkHelper1.Install (ueNodes.Get (0)));
 
-	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (1), sinkPort));	// ????
+	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));
 	sourceApps.Add (ftp1.Install (remoteHostContainer.Get (1)));
 
 	std::ostringstream fileName1;
-	fileName1<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-1-"<<1<<"-TCP-DATA.txt";	// nodenum fixed
+	fileName1<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-2-2"<<"-TCP-DATA.txt";	// nodenum fixed
 
 	AsciiTraceHelper asciiTraceHelper1;
 
 	Ptr<OutputStreamWrapper> stream1 = asciiTraceHelper1.CreateFileStream (fileName1.str ().c_str ());
 	sinkApps.Get(1)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream1));
 	sourceApps.Get(1)->SetStartTime(Seconds (0.1+0.1*1));
-	Simulator::Schedule (Seconds (0.1001+0.01*1), &Traces, 0, 1, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
+	Simulator::Schedule (Seconds (0.1001+0.1*1), &Traces, 1, 1, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 	sourceApps.Get(1)->SetStopTime (Seconds (simStopTime));
 
 	sinkPort++;

@@ -13,7 +13,7 @@ parser.add_argument("--traces", "-t", default=['DATA'], nargs='*', help="Select 
 parser.add_argument("--nodes", "-n", default=['1'], nargs='*', help="Select which nodes' trace files should be plotted.", choices=['1', '2', '3', '4', '5', '6'])
 parser.add_argument("--data-wndw", default='0.05', nargs='?', help="Resolution of x axis (tick size) in seconds.")
 parser.add_argument("--figsize", default='5,4', nargs='?', help="Figure size in inches delimited by a comma e.g. 11,4")
-parser.add_argument("--index", default='0', nargs='?', help="Index of server in case of multi-server/multiprotocol scenario.", choices=['0', '1'])
+parser.add_argument("--index", default='1', nargs='?', help="Index of server in case of multi-server/multiprotocol scenario.", choices=['1', '2'])
 #parser.add_argument("--linestyle", default='NONE', nargs='?', help="Matplotlib line style string.")
 #parser.add_argument("--marker", default='NONE', nargs='?', help="Matplotlib marker style string.")
 args = parser.parse_args()
@@ -42,10 +42,10 @@ if not single_server:
     protocol_list = [re.match(filename_regex_multiprotocol, x)[1] for x in filenames]
 
     print(protocol_list)
-    print('Plotting server no. {} ({})'.format(args.index, protocol_list[args.index]))
+    print('Plotting server no. {} ({})'.format(args.index, protocol_list[args.index - 1]))
 
-    protocol = protocol_list[args.index]
-    filename = filenames[args.index]
+    protocol = protocol_list[args.index - 1]
+    filename = filenames[args.index - 1]
     match = re.match(filename_regex_multiprotocol, filename)
     buffer_size = match[2]
     packet_size = match[3]
@@ -212,7 +212,8 @@ def plot_trace_file(nodes=None, trace=''):
                 trace_filename = '-'.join([filename_base, i, 'TCP', trace + '.txt'])
             else:
                 print('Multi server')
-                trace_filename = '-'.join([filename_base, i, str(args.index), 'TCP', trace + '.txt'])
+                #trace_filename = '-'.join([filename_base, i, str(args.index), 'TCP', trace + '.txt'])   
+                trace_filename = '-'.join([filename_base, str(args.index), str(args.index), 'TCP', trace + '.txt'])   # ugly nodenum = args.index hardwire
 
         x_vals, y_vals = [], []
 
@@ -273,7 +274,7 @@ def multiplot_trace_files(nodes=None, traces=None):
             global output_filename
             output_filename += '_'
         plot_trace_file(nodes=nodes, trace=trace)
-    output_filename += '_' + str(figsize[0]) + 'x' + str(figsize[1])
+    output_filename += str(args.index) + '_' + '_' + str(figsize[0]) + 'x' + str(figsize[1])
 
 multiplot_trace_files(nodes=args.nodes, traces=args.traces)
 
