@@ -27,27 +27,23 @@ using namespace ns3;
  */
 NS_LOG_COMPONENT_DEFINE ("mmWaveTCP_NLOS");
 
-static void
-CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+static void CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
 {
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldCwnd << "\t" << newCwnd << std::endl;
 }
 
-static void
-RttChange (Ptr<OutputStreamWrapper> stream, Time oldRtt, Time newRtt)
+static void RttChange (Ptr<OutputStreamWrapper> stream, Time oldRtt, Time newRtt)
 {
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldRtt.GetSeconds () << "\t" << newRtt.GetSeconds () << std::endl;
 }
 
-static void
-StateChange (Ptr<OutputStreamWrapper> stream, TcpSocket::TcpStates_t oldState, TcpSocket::TcpStates_t newState)
+static void StateChange (Ptr<OutputStreamWrapper> stream, TcpSocket::TcpStates_t oldState, TcpSocket::TcpStates_t newState)
 {
 	std::cout << "(t=" << Simulator::Now ().GetSeconds () << ") " << "TCP State changed from " << oldState << " to " << newState << std::endl;
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldState << "\t" << newState << std::endl;
 }
 
-static void
-CongStateChange (Ptr<OutputStreamWrapper> stream, TcpSocketState::TcpCongState_t oldState, TcpSocketState::TcpCongState_t newState)
+static void CongStateChange (Ptr<OutputStreamWrapper> stream, TcpSocketState::TcpCongState_t oldState, TcpSocketState::TcpCongState_t newState)
 {
 	std::cout << "(t=" << Simulator::Now ().GetSeconds () << ") " << "TCP CongState changed from " << oldState << " to " << newState << std::endl;
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldState << "\t" << newState << std::endl;
@@ -63,8 +59,7 @@ static void Rx (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet, const
 	*stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldSstresh << "\t" << newSstresh << std::endl;
 }*/
 
-void
-ChangeSpeed(Ptr<Node>  n, Vector speed)
+void ChangeSpeed(Ptr<Node>  n, Vector speed)
 {
 	n->GetObject<ConstantVelocityMobilityModel> ()->SetVelocity (speed);
 }
@@ -83,8 +78,7 @@ void ue_pos (Ptr<ConstantVelocityMobilityModel> m, Vector velocity_vector)
 }
 
 
-static void
-Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
+static void Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
 {
 	AsciiTraceHelper asciiTraceHelper;
 
@@ -128,106 +122,22 @@ Traces(uint16_t nodeNum, uint16_t remotehostNum, std::string protocol)
 	Ptr<OutputStreamWrapper> stream6 = asciiTraceHelper.CreateFileStream (fileCONGSTATE.str ().c_str ());
 	Config::ConnectWithoutContext (pathCONGSTATE.str ().c_str (), MakeBoundCallback(&CongStateChange, stream6));
 
-	/*
-	std::ostringstream a;
-	a<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<0<<"/RTT";
-	std::ostringstream b;
-	b<<protocol<<"-"<<1<<"-"<<1<<"-TCP-RTT.txt";
-	Ptr<OutputStreamWrapper> streama = asciiTraceHelper.CreateFileStream (b.str ().c_str ());
-	Config::ConnectWithoutContext (a.str ().c_str (), MakeBoundCallback(&RttChange, streama));
-
-	std::ostringstream aa;
-	aa<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<1<<"/RTT";
-	std::ostringstream bb;
-	bb<<protocol<<"-"<<1<<"-"<<2<<"-TCP-RTT.txt";
-	Ptr<OutputStreamWrapper> streamb = asciiTraceHelper.CreateFileStream (bb.str ().c_str ());
-	Config::ConnectWithoutContext (aa.str ().c_str (), MakeBoundCallback(&RttChange, streamb));
-
-	std::ostringstream aaa;
-	aaa<<"/NodeList/"<<7<<"/$ns3::TcpL4Protocol/SocketList/"<<2<<"/RTT";
-	std::ostringstream bbb;
-	bbb<<protocol<<"-"<<1<<"-"<<3<<"-TCP-RTT.txt";
-	Ptr<OutputStreamWrapper> streamc = asciiTraceHelper.CreateFileStream (bbb.str ().c_str ());
-	Config::ConnectWithoutContext (aaa.str ().c_str (), MakeBoundCallback(&RttChange, streamc));*/
-
 }
 
-/*static void set_protocol(std::string protocol) 
-{
-    if(protocol == "TcpNewReno")
-	{
-	Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
-	}
-	else if (protocol == "TcpVegas")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpVegas::GetTypeId ()));
-	}
-	else if (protocol == "TcpLedbat")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpLedbat::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpHighSpeed")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpHighSpeed::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpCubic")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpCubic::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpIllinois")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpIllinois::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpHybla")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpHybla::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpVeno")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpVeno::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpWestwood")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpYeah")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpYeah::GetTypeId ()));
-
-	}
-	else if (protocol == "TcpBbr")
-	{
-		Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpBbr::GetTypeId ()));
-
-	}
-	else
-	{
-		std::cout<<protocol<<" Unkown protocol.\n";
-	}
-}*/
-
-int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {   
 
 	Box building_box_1 = Box (37.5,50, 16.66,29.16, 0,50);
 	Box building_box_2 = Box (37.5,50, -6.25,6.25, 0,50); 
 	Box building_box_3 = Box (37.5,50, -29.16,-16.66, 0,50); 
-	Vector UE_start_pos = Vector (75, -37.5, 1.5);
-	Vector UE_velocity_vector = Vector (0.0, 6.25, 0.0);	// 50 / 8 = 6.25
+	Vector UE_start_pos = Vector (150, 0, 1.5);
+	Vector UE_velocity_vector = Vector (0.0, 0.0, 0.0);	// 50 / 8 = 6.25
 	
 	// LogComponentEnable("TcpCongestionOps", LOG_LEVEL_INFO);
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 2;
-	double simStopTime = 1.31;
+	double simStopTime = 30.01;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -280,7 +190,7 @@ main (int argc, char *argv[])
 	Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
 	//Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (50000));
 	//Config::SetDefault ("ns3::CoDelQueue::Interval", StringValue ("500ms"));	// default 100ms
-	//Config::SetDefault ("ns3::CoDelQueue::Target", StringValue ("50ms"));	// default 5ms
+	Config::SetDefault ("ns3::CoDelQueueDisc::Target", StringValue ("50ms"));	// default 5ms
 
 	//Config::SetDefault ("ns3::LteEnbRrc::SecondaryCellHandoverMode", EnumValue(LteEnbRrc::FIXED_TTT));
 
@@ -378,7 +288,7 @@ main (int argc, char *argv[])
 	internetp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (2)));
 
 	PointToPointHelper bottleneckp2ph;
-	bottleneckp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("50Mb/s")));
+	bottleneckp2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Mb/s")));
 	bottleneckp2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
 	bottleneckp2ph.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (7)));
 	//bottleneckp2ph.SetQueue ("ns3::DropTailQueue");	// queue method 2
@@ -405,45 +315,22 @@ main (int argc, char *argv[])
 	internetIpIfaces = ipv4h.Assign (bottleneckLink);
 	// interface 0 is localhost, 1 is the p2p device
 	Ptr<Ipv4StaticRouting> routerStaticRouting = ipv4RoutingHelper.GetStaticRouting (routerContainer.Get (0)->GetObject<Ipv4> ());
-	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);	// if 2: acks retransmissions visible
+	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);
 	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
 	routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("1.1.0.0"), Ipv4Mask ("255.255.0.0"), 3);
-	//routerStaticRouting->AddNetworkRouteTo (Ipv4Address ("100.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
 
 	Ptr<Ipv4StaticRouting> pgwStaticRouting = ipv4RoutingHelper.GetStaticRouting (pgw->GetObject<Ipv4> ());
-	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);	// if 1: forward packet to 7.0.0.0   if 2: acks retransmissions visible
-	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2); // if 2: seems ok, fails at router!
+	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("7.0.0.0"), Ipv4Mask ("255.255.0.0"), 1);	
+	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2); 
 	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("1.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
 
-	Config::Set ("/NodeList/2/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpCubic")));
-	Config::Set ("/NodeList/3/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpVegas")));
+	Config::Set ("/NodeList/2/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpBbr")));
+	Config::Set ("/NodeList/3/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpBbr")));
 
 	for (uint16_t i = 0; i < 2; i++)
 	{
- 		/*if (i == 0) {
-			//set_protocol ("TcpVegas");	// primary sender is always TCP BBR
-			Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpBbr::GetTypeId ()));
-		} 
-		else {
-			//set_protocol ("TcpVegas");	// secondary sender
-			Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpCubic::GetTypeId ()));
-			//set_protocol (protocol);	// secondary sender
-		}*/
-
 		Ptr<Node> remoteHost = remoteHostContainer.Get (i);
 		NetDeviceContainer internetDevices = internetp2ph.Install (routerContainer.Get (0), remoteHost);	// pgw was here
-
-		/*TypeId tid = TypeId::LookupByName ("ns3::TcpBbr");
-		std::stringstream nodeId;
-		nodeId << remoteHost->GetId ();
-		std::string specificNode = "/NodeList/" + nodeId.str () + "/$ns3::TcpL4Protocol/SocketType";
-		Config::Set (specificNode, TypeIdValue (tid));*/
-
-		
-
-		//Ptr<Socket> localSocket = Socket::CreateSocket (remoteHost, TcpSocketFactory::GetTypeId ());
-		//localSocket->Bind ();
-
 
 		Ipv4AddressHelper ipv4h;
 		std::ostringstream subnet;
@@ -504,7 +391,6 @@ main (int argc, char *argv[])
 	MobilityHelper uemobility;
 	uemobility.SetMobilityModel ("ns3::ConstantVelocityMobilityModel");   
 	Ptr<ListPositionAllocator> uePositionAlloc = CreateObject<ListPositionAllocator> ();
-	//uePositionAlloc->Add (Vector (75.0, -30.0, hUT));
 	UE_start_pos.z = hUT;
 	uePositionAlloc->Add (UE_start_pos);
 	uemobility.SetPositionAllocator (uePositionAlloc);
@@ -513,8 +399,6 @@ main (int argc, char *argv[])
 
 	Ptr<ConstantVelocityMobilityModel> mob = ueNodes.Get (0)->GetObject<ConstantVelocityMobilityModel>();
 	Ptr<ConstantVelocityMobilityModel> mob1 = ueNodes.Get (1)->GetObject<ConstantVelocityMobilityModel>();
-	// uemobility->SetVelocity("Velocity", Vector3DValue (Vector(0.0, 20.0, 0.0)) );
-	//mob->SetVelocity( UE_velocity_vector);   // direction and velocity of UE in m/s
 
 	mob->SetVelocity (Vector (0, 0, 0));   // initially stationary
 	Vector pos = mob->GetPosition ();
@@ -557,23 +441,11 @@ main (int argc, char *argv[])
 
 	// // server 0
 	// Install and start applications on UEs and remote host
-
 	PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
 	sinkApps.Add (packetSinkHelper.Install (ueNodes.Get (0)));
 
-	//std::stringstream nodeId;
-	//nodeId << allEnbNodes.Get (1)->GetId ();
-	//std::cout << "NODEID IS " << nodeId.str ().c_str () << std::endl;
-	// "/NodeList/[i]/ApplicationList/[i]/$ns3::BulkSendApplication" / GetSocket!
-
-	BulkSendHelper ftp ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));	//  protocol	the name of the protocol to use to send traffic by the application    address	the address of the remote node to send traffic to. 
+	BulkSendHelper ftp ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));
 	sourceApps.Add (ftp.Install (remoteHostContainer.Get (0)));
-/*
-	Ptr<Socket> destSocket = Socket::CreateSocket (ueNodes.Get (0), TcpSocketFactory::GetTypeId ());
-	Ipv4Address dstaddr (ueIpIface.GetAddress (0));
-	//Ipv4Address dstaddr (Ipv4Address::GetAny () elmentett erteke??);
-	InetSocketAddress dst = InetSocketAddress (dstaddr, sinkPort);
-	dstSocket->Bind (dst);*/
 
 	std::ostringstream fileName;
 	fileName<<protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay)<<"-1-1"<<"-TCP-DATA.txt";
@@ -582,8 +454,8 @@ main (int argc, char *argv[])
 
 	Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ().c_str ());
 	sinkApps.Get(0)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
-	sourceApps.Get(0)->SetStartTime(Seconds (0.1+1.0*1));
-	Simulator::Schedule (Seconds (0.1001+1.0*1), &Traces, 0, 0, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
+	sourceApps.Get(0)->SetStartTime(Seconds (0.1));
+	Simulator::Schedule (Seconds (0.1001), &Traces, 0, 0, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 	sourceApps.Get(0)->SetStopTime (Seconds (simStopTime));
 
 	sinkPort++;
@@ -595,9 +467,9 @@ main (int argc, char *argv[])
 
 	// Install and start applications on UEs and remote host
 	PacketSinkHelper packetSinkHelper1 ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
-	sinkApps.Add (packetSinkHelper1.Install (ueNodes.Get (0)));
+	sinkApps.Add (packetSinkHelper1.Install (ueNodes.Get (1)));
 
-	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));
+	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (1), sinkPort));
 	sourceApps.Add (ftp1.Install (remoteHostContainer.Get (1)));
 
 	std::ostringstream fileName1;
@@ -607,8 +479,8 @@ main (int argc, char *argv[])
 
 	Ptr<OutputStreamWrapper> stream1 = asciiTraceHelper1.CreateFileStream (fileName1.str ().c_str ());
 	sinkApps.Get(1)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream1));
-	sourceApps.Get(1)->SetStartTime(Seconds (0.1+0.1*1));
-	Simulator::Schedule (Seconds (0.1001+0.1*1), &Traces, 1, 1, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
+	sourceApps.Get(1)->SetStartTime(Seconds (5.0));
+	Simulator::Schedule (Seconds (5.0001), &Traces, 1, 1, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 	sourceApps.Get(1)->SetStopTime (Seconds (simStopTime));
 
 	sinkPort++;
