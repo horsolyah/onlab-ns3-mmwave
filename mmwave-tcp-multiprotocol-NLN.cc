@@ -582,7 +582,7 @@ main (int argc, char *argv[])
 
 	Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream (fileName.str ().c_str ());
 	sinkApps.Get(0)->TraceConnectWithoutContext("Rx",MakeBoundCallback (&Rx, stream));
-	sourceApps.Get(0)->SetStartTime(Seconds (0.1+1.0*1));
+	sourceApps.Get(0)->SetStartTime(Seconds (0.1+0.4*1));
 	Simulator::Schedule (Seconds (0.1001+0.01*0), &Traces, 0, 0, protocol+"-"+std::to_string(bufferSize)+"-"+std::to_string(packetSize)+"-"+std::to_string(p2pDelay));
 	sourceApps.Get(0)->SetStopTime (Seconds (simStopTime));
 
@@ -597,7 +597,7 @@ main (int argc, char *argv[])
 	PacketSinkHelper packetSinkHelper1 ("ns3::TcpSocketFactory", InetSocketAddress (Ipv4Address::GetAny (), sinkPort));
 	sinkApps.Add (packetSinkHelper1.Install (ueNodes.Get (1)));
 
-	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (0), sinkPort));	// ????
+	BulkSendHelper ftp1 ("ns3::TcpSocketFactory", InetSocketAddress (ueIpIface.GetAddress (1), sinkPort));	// ????
 	sourceApps.Add (ftp1.Install (remoteHostContainer.Get (1)));
 
 	std::ostringstream fileName1;
