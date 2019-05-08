@@ -227,7 +227,7 @@ main (int argc, char *argv[])
 	// LogComponentEnable("TcpSocketBase", LOG_LEVEL_INFO);
 
 	uint16_t nodeNum = 2;
-	double simStopTime = 1.11;
+	double simStopTime = 1.31;
 	bool harqEnabled = true;
 	bool rlcAmEnabled = true;
 	std::string protocol = "TcpBbr";
@@ -415,6 +415,9 @@ main (int argc, char *argv[])
 	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("0.1.0.0"), Ipv4Mask ("255.255.0.0"), 2); // if 2: seems ok, fails at router!
 	pgwStaticRouting->AddNetworkRouteTo (Ipv4Address ("1.1.0.0"), Ipv4Mask ("255.255.0.0"), 2);
 
+	Config::Set ("/NodeList/2/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpCubic")));
+	Config::Set ("/NodeList/3/$ns3::TcpL4Protocol/SocketType", TypeIdValue (TypeId::LookupByName ("ns3::TcpVegas")));
+
 	for (uint16_t i = 0; i < 2; i++)
 	{
  		/*if (i == 0) {
@@ -430,11 +433,14 @@ main (int argc, char *argv[])
 		Ptr<Node> remoteHost = remoteHostContainer.Get (i);
 		NetDeviceContainer internetDevices = internetp2ph.Install (routerContainer.Get (0), remoteHost);	// pgw was here
 
-		TypeId tid = TypeId::LookupByName ("ns3::TcpBbr");
+		/*TypeId tid = TypeId::LookupByName ("ns3::TcpBbr");
 		std::stringstream nodeId;
 		nodeId << remoteHost->GetId ();
 		std::string specificNode = "/NodeList/" + nodeId.str () + "/$ns3::TcpL4Protocol/SocketType";
-		Config::Set (specificNode, TypeIdValue (tid));
+		Config::Set (specificNode, TypeIdValue (tid));*/
+
+		
+
 		Ptr<Socket> localSocket = Socket::CreateSocket (remoteHost, TcpSocketFactory::GetTypeId ());
 		localSocket->Bind ();
 
