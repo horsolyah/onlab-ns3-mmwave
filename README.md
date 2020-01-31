@@ -1,7 +1,14 @@
 ## 5G network simulation experiments using the ns3-mmwave module
 ##### Code repository for my ns-3 mobile network simulation coursework, created for a Laboratory course at Budapest University of Technology and Economics.
 
-![Scenario1](https://i.imgur.com/bn7DiyI.png) ![Scenario2](https://i.imgur.com/p6ieC4L.png)
+![]()
+
+![Map1](https://i.imgur.com/X9vuW7J.png)   ![Test1](https://i.imgur.com/vOAnmEz.png)
+
+
+![Map2](https://i.imgur.com/w8B78OF.png) ![Test2](https://raw.githubusercontent.com/levesduzw/onlab-ns3-mmwave/master/szakdolgozat%20example%20outputs/plot%20colored%20axes/2_bbr.png)
+
+![Wireshark Window Scaling](https://i.imgur.com/HP29Dwc.png) 
 
 ## Summary
 
@@ -16,11 +23,10 @@ The main task was to explore the behavior of TCP's most used Congestion Avoidanc
 
 ## Details
 Dependencies:
-- [ns-3 Network Simulator](https://www.nsnam.org/ns-3-28/download/)
-- [ns-3 mmWave module](https://github.com/nyuwireless-unipd/ns3-mmwave)
-- Python 3.6, matplotlib (custom plotting script)
+- [ns-3 Network Simulator 3.27 + mmwave module v1.2 + TCP BBR implementation](https://github.com/levesduzw/szakdolgozat-SETUP-ns3-mmwave-tcpbbr)
+- Python 3.6, matplotlib, tkinter (custom plotting script)
 
-A custom source file ('mmwave-tcp-NLOS.cc') is used for the simulation, involving one mmWave base station, one piece of User Equipment, and some "buildings". The UE's movement direction and speed are specified here, as well as the congestion avoidance algorithm to be used.
+Custom test definition files ('...') are used for the simulation, involving one mmWave base station, one piece of User Equipment, and some "buildings". The UE's movement direction and speed are specified here, as well as the congestion avoidance algorithm to be used.
 
 After a simulation in ns-3 is completed, the plotting script parses the trace files (txt, pcap). 
 
