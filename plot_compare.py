@@ -5,7 +5,7 @@ Plots traces of different/separate executions.
 Filename requirements:
 e.g. TcpBbr-1500000-1400-5-1-1-TCP-DATA.txt
      TcpBbr-1500000-1400-5-2-2-TCP-DATA.txt
-For each flow, the colors will be different in the order of (brcmgyk).
+For each data type, a lighter and a darker shade of a color will be set using attr_specific_dict.   
 """
 
 import os, sys, re
@@ -13,6 +13,7 @@ import argparse
 import matplotlib.style as mplstyle
 #mplstyle.use('fast')
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--traces", "-t", default='DATA', nargs='?', help="Select data trace to plot.", choices=['CWND', 'RCWND', 'RTT', 'DATA', 'MMWAVESINR', 'LTESINR'])
@@ -26,11 +27,12 @@ protocol = 'TcpBbr'
 #protocol = 'TcpCubic'
 buffer_size = '1500000'
 packet_size = '1400'
-p2pdelay = '9'
+p2pdelay = '5'
 nodeNum = 2
 filename_base = '-'.join([protocol, buffer_size, packet_size, p2pdelay])
 #colors = 'bgrcmyk'
 colors = 'brcmgyk'
+labels_new = ['CUBIC', 'BBR']
 
 data_wndw = float(args.data_wndw)
 
@@ -136,8 +138,22 @@ def plot_trace_file(nodes=None, trace=''):
 
         if trace == 'DATA': 
             (x_vals, y_vals) = data_trace(x_vals, y_vals)
+        
 
-        plt.plot(x_vals, y_vals, colors[int(i)-1]+plot_style, linewidth=0.5, antialiased=False, label='Flow '+i)
+        attr_specific_dict = {
+            'DATA': ['red', 'maroon'],
+            'RTT': ['limegreen', 'darkgreen'],
+            'CWND': ['darkorange', 'darkgoldenrod'],
+            'MMWAVESINR': ['b', 'b']
+        }
+
+        attr_specific_color = attr_specific_dict[trace][int(i)-1]
+        print(attr_specific_color)
+
+
+        # missing plot_style -
+        plt.plot(x_vals, y_vals, attr_specific_color, linestyle='-', linewidth=0.5, antialiased=False, label=labels_new[int(i)-1])
+        #used before last minute coloring #plt.plot(x_vals, y_vals, colors[int(i)-1]+plot_style, linewidth=0.5, antialiased=False, label=labels_new[int(i)-1])
         #plt.plot(x_vals, y_vals, colors[int(i)-1], linestyle='s', markersize=2, linewidth=0.3, antialiased=False, label='Node '+i)
         
         plt.xlabel('time (s)')
@@ -170,6 +186,9 @@ def plot_trace_file(nodes=None, trace=''):
     ax.xaxis.set_major_locator(plt.AutoLocator())
     ax.yaxis.set_major_locator(plt.AutoLocator())
     ax.legend()
+    ax.axvspan(0, 2, facecolor='lightgray', alpha=0.5, label="NLOS")
+    ax.axvspan(4, 8, facecolor='lightgray', alpha=0.5, label="NLOS")
+    ax.axvspan(10, 12, facecolor='lightgray', alpha=0.5, label="NLOS")
 
     #plt.show()
     if not os.path.isdir('png'): os.makedirs('png')
